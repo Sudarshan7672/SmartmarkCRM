@@ -1,0 +1,220 @@
+const { default: mongoose } = require("mongoose");
+
+const leadSchema = new mongoose.Schema({
+  lead_id: {
+    type: String,
+    required: true,
+  },
+  leadowneremail: {
+    type: String,
+    required: true,
+  },
+  source: {
+    type: String,
+    required: true,
+  },
+  firstname: {
+    type: String,
+    required: true,
+  },
+  lastname: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  contact: {
+    type: String, // Ensure it's stored as a string
+    required: true,
+  },
+  whatsapp: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  designation: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  company: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  address: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  Zone: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  country: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  requirements: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  status: {
+    type: String,
+    required: true,
+    default: "New",
+    enum: [
+      "New",
+      "Not-Connected",
+      "Hot",
+      "Cold",
+      "Re-enquired",
+      "Follow-up",
+      "Converted",
+      "Transferred-to-Dealer",
+    ],
+  },
+  primarycategory: {
+    type: String,
+    required: false,
+    default: "",
+    enum: ["", "sales", "support"],
+  },
+  secondarycategory: {
+    type: String,
+    required: false,
+    default: "",
+    enum: [
+      "",
+      "group 1",
+      "group 2",
+      "group 3",
+      "group 4",
+      "group 5",
+      "group 6",
+    ],
+  },
+  isfca: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  re_enquired: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  followups: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "FollowUp",
+    },
+  ],
+  remarks: {
+    type: [
+      {
+        remark: String,
+        remarkby: String,
+        image: String,
+        logtime: { type: Date, default: Date.now },
+      },
+    ],
+    required: false,
+    default: [],
+  },
+  updatelogs: {
+    type: [
+      {
+        updatedby: {
+          type: String,
+          required: true,
+        },
+        updatedfields: {
+          type: [String],
+          required: true,
+        },
+        logtime: { type: Date, default: Date.now },
+      },
+    ],
+    required: false,
+    default: [],
+  },
+  transferredtologs: {
+    type: [
+      {
+        transferredto: {
+          author: String,
+          primarycategory: String,
+          secondarycategory: String,
+        },
+        transferredby: {
+          author: String,
+          primarycategory: String,
+          secondarycategory: String,
+        },
+        remark: String,
+        logtime: { type: Date, default: Date.now },
+      },
+    ],
+    required: false,
+    default: [],
+  },
+  notification_logs: {
+    type: [
+      {
+        message: String,
+        sent_at: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  },
+  referredby: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  referredto: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  created_at: {
+    type: Date,
+    default: Date.now,
+  },
+  updated_at: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+// Auto-update `updated_at` field before saving
+leadSchema.pre("save", function (next) {
+  this.updated_at = new Date();
+  next();
+});
+
+leadSchema.pre("findOneAndUpdate", function (next) {
+    this.set({ updated_at: new Date() });
+    next();
+  });
+  
+
+// Delete follow-ups when a lead is deleted
+leadSchema.pre("findOneAndDelete", async function (next) {
+  const FollowUp = require("./FollowUp");
+  const lead = await this.model.findOne(this.getQuery());
+  console.log("Lead to be deleted:", lead);
+
+  if (lead) {
+    await FollowUp.deleteMany({ leadId: lead._id });
+  }
+  next();
+});
+
+module.exports = mongoose.model("Lead", leadSchema);
