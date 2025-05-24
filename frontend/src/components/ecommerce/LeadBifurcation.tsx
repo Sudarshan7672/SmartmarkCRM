@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import BASE_URL from "../../configs/constants";
+import BACKEND_URL from "../../configs/constants";
 
 interface BifurcationEntry {
   leadOwner: string;
@@ -24,7 +24,12 @@ export default function LeadBifurcation() {
   useEffect(() => {
     const fetchBifurcation = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/dashboard/lead-bifurcation`);
+        const response = await axios.get(
+          `${BACKEND_URL}/dashboard/lead-bifurcation`,
+          {
+            withCredentials: true,
+          }
+        );
         setData(response.data);
       } catch (error) {
         console.error("Error fetching lead bifurcation:", error);
@@ -44,24 +49,60 @@ export default function LeadBifurcation() {
         <Table>
           <TableHeader className="border-y border-gray-200 dark:border-gray-800">
             <TableRow>
-              <TableCell isHeader className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">Lead Owner</TableCell>
-              <TableCell isHeader className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">Total</TableCell>
-              <TableCell isHeader className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">New</TableCell>
-              <TableCell isHeader className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">Cold</TableCell>
-              <TableCell isHeader className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">Not Connected</TableCell>
-              <TableCell isHeader className="py-3 text-theme-xs text-gray-500 dark:text-gray-400">Untouched</TableCell>
+              <TableCell
+                isHeader
+                className="py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Lead Owner
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Total
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                New
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Cold
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Not Connected
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Untouched
+              </TableCell>
             </TableRow>
           </TableHeader>
 
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {data.map((entry, index) => (
               <TableRow key={index}>
-                <TableCell className="py-3 text-sm">{entry.leadOwner}</TableCell>
+                <TableCell className="py-3 text-sm">
+                  {entry.leadOwner}
+                </TableCell>
                 <TableCell className="py-3 text-sm">{entry.total}</TableCell>
                 <TableCell className="py-3 text-sm">{entry.new}</TableCell>
                 <TableCell className="py-3 text-sm">{entry.cold}</TableCell>
-                <TableCell className="py-3 text-sm">{entry.notconnected}</TableCell>
-                <TableCell className="py-3 text-sm">{entry.untouched}</TableCell>
+                <TableCell className="py-3 text-sm">
+                  {entry.notconnected}
+                </TableCell>
+                <TableCell className="py-3 text-sm">
+                  {entry.untouched}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

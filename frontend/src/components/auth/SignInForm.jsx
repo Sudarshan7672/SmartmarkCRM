@@ -53,7 +53,6 @@ export default function SignInForm() {
         setUsername("");
         setPassword("");
         window.location.reload(); // Reload the page to reflect the login state
-
       }
     } catch (err) {
       setError(
@@ -83,7 +82,7 @@ export default function SignInForm() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/auth/isauthenticated`, {
+        const res = await axios.get(`${BACKEND_URL}/auth/isauthenticated`, {
           withCredentials: true,
         });
 
@@ -97,20 +96,21 @@ export default function SignInForm() {
     };
 
     checkLoginStatus();
-  }
-  , []);
+  }, []);
 
   return (
     <div className="flex flex-col flex-1">
-      {isLoggedIn && (<div className="w-full max-w-md pt-10 mx-auto">
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ChevronLeftIcon className="size-5" />
-          Back to dashboard
-        </Link>
-      </div>)}
+      {isLoggedIn && (
+        <div className="w-full max-w-md pt-10 mx-auto">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          >
+            <ChevronLeftIcon className="size-5" />
+            Back to dashboard
+          </Link>
+        </div>
+      )}
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">

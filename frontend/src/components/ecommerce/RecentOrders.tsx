@@ -10,7 +10,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import { Lead } from "../ui/table"; // Assuming Lead type is exported from here
 
-import BASE_URL from '../../configs/constants'
+import BACKEND_URL from "../../configs/constants";
 
 export default function RecentOrders() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -18,7 +18,12 @@ export default function RecentOrders() {
   useEffect(() => {
     const fetchRecentLeads = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/dashboard/recent-ten`);
+        const response = await axios.get(
+          `${BACKEND_URL}/dashboard/recent-ten`,
+          {
+            withCredentials: true,
+          }
+        );
         setLeads(response.data);
       } catch (error) {
         console.error("Failed to fetch leads:", error);
@@ -40,20 +45,51 @@ export default function RecentOrders() {
         <Table>
           <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
             <TableRow>
-              <TableCell isHeader className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400">Name</TableCell>
-              <TableCell isHeader className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400">Email</TableCell>
-              <TableCell isHeader className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400">Source</TableCell>
-              <TableCell isHeader className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400">Status</TableCell>
-              <TableCell isHeader className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400">Created At</TableCell>
+              <TableCell
+                isHeader
+                className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Name
+              </TableCell>
+              <TableCell
+                isHeader
+                className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Email
+              </TableCell>
+              <TableCell
+                isHeader
+                className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Source
+              </TableCell>
+              <TableCell
+                isHeader
+                className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Status
+              </TableCell>
+              <TableCell
+                isHeader
+                className="text-left py-3 text-theme-xs text-gray-500 dark:text-gray-400"
+              >
+                Created At
+              </TableCell>
             </TableRow>
           </TableHeader>
 
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {leads.map((lead) => (
               <TableRow key={lead.id}>
-                <TableCell className="text-left py-3 text-sm">{lead.firstname} {lead.lastname}</TableCell>
-                <TableCell className="text-left py-3 text-sm">{lead.email}</TableCell>
-                <TableCell className="text-left py-3 text-sm">{lead.source}</TableCell>
+                <TableCell className="text-left py-3 text-sm">
+                  {lead.firstname} {lead.lastname}
+                </TableCell>
+                <TableCell className="text-left py-3 text-sm">
+                  {lead.email}
+                </TableCell>
+                <TableCell className="text-left py-3 text-sm">
+                  {lead.source}
+                </TableCell>
                 <TableCell className="text-left py-3 text-sm">
                   <Badge
                     size="sm"

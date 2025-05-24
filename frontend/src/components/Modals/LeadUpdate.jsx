@@ -20,7 +20,9 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.put(`${BACKEND_URL}/leads/update`, formData);
+      await axios.put(`${BACKEND_URL}/leads/update`, formData,
+        { withCredentials: true }
+      );
       // alert("Lead updated successfully!");
       onClose();
       window.location.reload();
@@ -33,7 +35,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-opacity-30 backdrop-blur-sm">
+    <div className="fixed inset-0 flex pt-20 pl-40 items-center justify-center bg-opacity-30 backdrop-blur-sm">
       <div className="max-w-5xl w-full bg-white shadow-lg rounded-lg p-6 border border-blue-400 relative">
         <button onClick={onClose} className="absolute top-3 right-3 text-red-600 text-xl">&times;</button>
         <h2 className="text-2xl font-semibold text-blue-600 mb-4">Update Lead</h2>

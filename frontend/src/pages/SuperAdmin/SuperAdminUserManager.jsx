@@ -1,6 +1,7 @@
 import React, { use, useEffect, useState } from "react";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
+import PageMeta from "../../components/common/PageMeta";
 
 export default function SuperAdminUserManager() {
 
@@ -123,6 +124,11 @@ export default function SuperAdminUserManager() {
   );
 
   return (
+    <>
+    <PageMeta
+        title="User Management"
+        description="Manage users, roles, and permissions"
+      />
     <div className="p-4 max-w-5xl mx-auto">
       <h2 className="text-xl font-bold mb-4">
         {editMode ? "Edit User" : "Add New User"}
@@ -235,5 +241,6 @@ export default function SuperAdminUserManager() {
         </table>
       </div>
     </div>
+    </>
   );
 }

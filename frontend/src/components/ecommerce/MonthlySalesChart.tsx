@@ -14,7 +14,9 @@ export default function MonthlySalesChart() {
 
   const fetchTimelineData = async () => {
     try {
-      const res = await axios.get(`${BACKEND_URL}/dashboard/lead-timeline`);
+      const res = await axios.get(`${BACKEND_URL}/dashboard/lead-timeline`,{
+        withCredentials: true,
+      });
       const dates = res.data.data.map((d: any) => d.date);
       // console.log("Dates:", res.data.data);
       const counts = res.data.data.map((d: any) => d.count);

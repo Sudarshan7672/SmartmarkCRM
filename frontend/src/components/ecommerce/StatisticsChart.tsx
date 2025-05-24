@@ -3,15 +3,22 @@ import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import ChartTab from "../common/ChartTab";
-import BASE_URL from "../../configs/constants";
+import BACKEND_URL from "../../configs/constants";
 
 export default function StatisticsChart() {
-  const [leadStats, setLeadStats] = useState<{ target: number; completed: number }[]>([]);
+  const [leadStats, setLeadStats] = useState<
+    { target: number; completed: number }[]
+  >([]);
 
   useEffect(() => {
     const fetchLeadStats = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/dashboard/lead-stats`);
+        const response = await axios.get(
+          `${BACKEND_URL}/dashboard/lead-stats`,
+          {
+            withCredentials: true,
+          }
+        );
         setLeadStats(response.data);
       } catch (error) {
         console.error("Failed to fetch lead statistics:", error);
@@ -80,7 +87,18 @@ export default function StatisticsChart() {
     xaxis: {
       type: "category", // Category-based x-axis
       categories: [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ],
       axisBorder: {
         show: false, // Hide x-axis border

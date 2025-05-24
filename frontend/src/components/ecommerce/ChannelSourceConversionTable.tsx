@@ -9,7 +9,9 @@ const ChannelSourceConversionTable = () => {
     // Fetch the data from the backend using Axios
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${BACKEND_URL}/dashboard/channel-source-conversion`);
+        const response = await axios.get(`${BACKEND_URL}/dashboard/channel-source-conversion`, {
+          withCredentials: true,
+        });
         setData(response.data.data); // Set the data in state
         console.log("Channel-Source Conversion Data:", response.data.data);
       } catch (error) {

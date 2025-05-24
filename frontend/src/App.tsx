@@ -25,6 +25,9 @@ import Home from "./pages/Dashboard/Home";
 import RaiseTicket from "./pages/OtherPage/RaiseTicket";
 import Logout from "./pages/AuthPages/Logout";
 import SuperAdminUserManager from "./pages/SuperAdmin/SuperAdminUserManager.jsx"
+import SearchLeads from "./pages/LeadManager/SearchLeads.jsx";
+import DeleteLogs from "./pages/OtherPage/DeleteLogs.jsx";
+import LeadLogs from "./pages/OtherPage/LeadLogs.jsx";
 
 export default function App() {
   return (
@@ -38,9 +41,14 @@ export default function App() {
             <Route index path="/dashboard" element={<Home />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/manage-leads" element={<LeadManager />} />
+            <Route path="/search-leads" element={<SearchLeads />} />
+
             <Route path="/add-lead" element={<LeadForm />} />
             <Route path="/bulk-upload" element={<BulkUploadManager />} />
             <Route path="/bulk-actions" element={<BulkAction />} />
+            {/* logs route */}
+            <Route path="/lead-logs" element={<LeadLogs />} />
+            <Route path="/delete-logs" element={<DeleteLogs />} />
             <Route path='/raise-ticket' element={<RaiseTicket />} />
 
            {/* SuperAdmin */}

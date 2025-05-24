@@ -9,6 +9,7 @@ import Check from "@mui/icons-material/Check";
 import BACKEND_URL from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import PageMeta from "../../components/common/PageMeta";
 
 const BulkUploadManager = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -183,6 +184,11 @@ const BulkUploadManager = () => {
   };
 
   return (
+    <>
+    <PageMeta
+        title="Bulk Lead Upload"
+        description="Upload multiple leads at once using a template file."
+      />
     <div className="p-6 bg-white rounded-lg shadow-xl max-w-4xl mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">
@@ -303,6 +309,7 @@ const BulkUploadManager = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

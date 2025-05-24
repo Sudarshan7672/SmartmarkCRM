@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import BACKEND_URL from '../../configs/constants';
+import PageMeta from "../../components/common/PageMeta";
 
 const BulkActions = () => {
   const [actions, setActions] = useState([]);
@@ -10,7 +11,9 @@ const BulkActions = () => {
 
   const fetchActions = async () => {
     try {
-      const res = await axios.get(`${BACKEND_URL}/bulkupload/actions`);
+      const res = await axios.get(`${BACKEND_URL}/bulkupload/actions`,{
+        withCredentials: true,
+      });
       setActions(res.data.actions || []);
     } catch (err) {
       console.error('Error fetching actions:', err);
@@ -27,6 +30,11 @@ const BulkActions = () => {
   const paginatedActions = actions.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
+    <>
+    <PageMeta
+        title="Bulk Upload History"
+        description="View the history of bulk uploads and their statuses."
+      />
     <div className="p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-xl font-semibold mb-4 text-gray-800">Bulk Upload History</h2>
 
@@ -84,6 +92,7 @@ const BulkActions = () => {
         </>
       )}
     </div>
+    </>
   );
 };
 

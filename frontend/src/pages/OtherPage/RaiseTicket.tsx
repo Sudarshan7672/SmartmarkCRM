@@ -3,6 +3,7 @@ import axios from "axios";
 import BACKEND_URL from "../../configs/constants"
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PageMeta from "../../components/common/PageMeta";
 
 
 const RaiseTicket = () => {
@@ -54,7 +55,9 @@ const RaiseTicket = () => {
 
     try {
       // Send a POST request to your backend to raise the ticket
-      const response = await axios.post(`${BACKEND_URL}/raiseticket/new`, ticketData);
+      const response = await axios.post(`${BACKEND_URL}/raiseticket/new`, ticketData,{
+        withCredentials: true,
+      });
 
       // Handle the response from the backend
       console.log(response.data);
@@ -71,6 +74,11 @@ const RaiseTicket = () => {
   };
 
   return (
+    <>
+    <PageMeta
+      title="Raise a Ticket"
+      description="If you are facing any issues, please raise a ticket and we will get back to you as soon as possible."
+    />
     <div className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4">Raise a Ticket</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,6 +132,7 @@ const RaiseTicket = () => {
         )}
       </form>
     </div>
+    </>
   );
 };
 

@@ -19,7 +19,9 @@ export default function DemographicCard() {
   }
 
   useEffect(() => {
-    axios.get(`${BACKEND_URL}/dashboard/leads-by-country`)
+    axios.get(`${BACKEND_URL}/dashboard/leads-by-country`,{
+      withCredentials: true,
+    })
       .then(res => setCountryData(res.data.data))
       .catch(err => console.error("Failed to fetch country data", err));
   }, []);

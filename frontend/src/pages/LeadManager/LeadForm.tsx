@@ -3,6 +3,7 @@ import axios from "axios";
 import BACKEND_URL from '../../configs/constants';
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PageMeta from "../../components/common/PageMeta";
 const LeadForm = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -98,7 +99,9 @@ const LeadForm = () => {
 
     try {
       // Step 1: Create Lead
-      const leadResponse = await axios.post(`${BACKEND_URL}/leads/add`, formData);
+      const leadResponse = await axios.post(`${BACKEND_URL}/leads/add`, formData,{
+        withCredentials: true,
+      });
       console.log("Lead added successfully:", leadResponse.data);
       setMessage("Lead added successfully");
       // Reset form data
@@ -140,6 +143,11 @@ const LeadForm = () => {
   };
 
   return (
+    <>
+    <PageMeta
+      title="Add New Lead"
+      description="Add a new lead to the system. Fill in the required details and submit the form."
+      />
     <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-3 mt-1 border border-blue-300">
       <h2 className="text-xl font-semibold text-blue-600 mb-4">Add New Lead</h2>
       {message && <p className="text-center text-red-500">{message}</p>}
@@ -232,6 +240,7 @@ const LeadForm = () => {
 
        </form>
      </div>
+    </>
    );
 };
 

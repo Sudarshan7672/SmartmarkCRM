@@ -5,7 +5,7 @@ import axios from "axios";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import BASE_URL from "../../configs/constants";
+import BACKEND_URL from "../../configs/constants";
 
 export default function MonthlyTarget() {
   const [series, setSeries] = useState([0]);
@@ -14,14 +14,17 @@ export default function MonthlyTarget() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/dashboard/monthly-target`)
-      .then(res => {
+    axios
+      .get(`${BACKEND_URL}/dashboard/monthly-target`, {
+        withCredentials: true,
+      })
+      .then((res) => {
         const { converted, target, percentage } = res.data;
         setConverted(converted);
         setTarget(target);
         setSeries([percentage > 100 ? 100 : percentage]);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error fetching monthly target:", err);
       });
   }, []);
@@ -50,7 +53,7 @@ export default function MonthlyTarget() {
             fontWeight: "600",
             offsetY: -40,
             color: "#1D2939",
-            formatter: val => `${val}%`,
+            formatter: (val) => `${val}%`,
           },
         },
       },
@@ -76,16 +79,29 @@ export default function MonthlyTarget() {
             <button onClick={() => setIsOpen(!isOpen)}>
               <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
             </button>
-            <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 p-2">
-              <DropdownItem onItemClick={() => setIsOpen(false)}>View More</DropdownItem>
-              <DropdownItem onItemClick={() => setIsOpen(false)}>Delete</DropdownItem>
+            <Dropdown
+              isOpen={isOpen}
+              onClose={() => setIsOpen(false)}
+              className="w-40 p-2"
+            >
+              <DropdownItem onItemClick={() => setIsOpen(false)}>
+                View More
+              </DropdownItem>
+              <DropdownItem onItemClick={() => setIsOpen(false)}>
+                Delete
+              </DropdownItem>
             </Dropdown>
           </div>
         </div>
 
         <div className="relative">
           <div className="max-h-[330px]" id="chartDarkStyle">
-            <Chart options={options} series={series} type="radialBar" height={330} />
+            <Chart
+              options={options}
+              series={series}
+              type="radialBar"
+              height={330}
+            />
           </div>
         </div>
 

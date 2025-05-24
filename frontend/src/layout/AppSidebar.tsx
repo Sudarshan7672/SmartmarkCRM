@@ -20,7 +20,7 @@ import { useSidebar } from "../context/SidebarContext";
 import axios from "axios";
 // import SidebarWidget from "./SidebarWidget";
 
-import BASE_URL from "../configs/constants";
+import BACKEND_URL from "../configs/constants";
 
 type NavItem = {
   name: string;
@@ -35,7 +35,7 @@ const loginItems: NavItem[] = [
     name: "Sign In",
     path: "/",
   },
-]
+];
 
 const navItems: NavItem[] = [
   {
@@ -151,6 +151,16 @@ const supernavItems: NavItem[] = [
     name: "Manage Users",
     path: "/super-admin",
   },
+  {
+    icon: <CalenderIcon />,
+    name: "Lead Logs",
+    path: "/lead-logs",
+  },
+  {
+    icon: <PageIcon />,
+    name: "Lead Delete Logs",
+    path: "/delete-logs",
+  },
   // {
   //   icon: <UserCircleIcon />,
   //   name: "User Profile",
@@ -214,7 +224,7 @@ const AppSidebar: React.FC = () => {
   const [user, setUser] = useState<any>({});
   useEffect(() => {
     axios
-      .get(`${BASE_URL}/auth/isAuthenticated`, {
+      .get(`${BACKEND_URL}/auth/isAuthenticated`, {
         withCredentials: true,
         validateStatus: () => true, // <-- allow all status codes to be handled in `.then`
       })
@@ -231,7 +241,6 @@ const AppSidebar: React.FC = () => {
         console.error("Unexpected error checking authentication:", error);
       });
   }, []);
-  
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -251,9 +260,12 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main"
-  ? (isauthenticated ? navItems : loginItems)
-  : othersItems;
+      const items =
+        menuType === "main"
+          ? isauthenticated
+            ? navItems
+            : loginItems
+          : othersItems;
 
       items.forEach((nav, index) => {
         if (nav.subItems) {
@@ -286,8 +298,6 @@ const AppSidebar: React.FC = () => {
       }
     }
   }, [openSubmenu]);
-  
-
 
   const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
     setOpenSubmenu((prevOpenSubmenu) => {
@@ -448,18 +458,18 @@ const AppSidebar: React.FC = () => {
         <Link to="/">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
-            {/* Smartmark Company logo light mode */}
+              {/* Smartmark Company logo light mode */}
               <img
                 className="dark:hidden"
-                src="/images/logo/smartmarklogo.jpeg"
+                src="/images/logo/gbslogosidebar.jpg"
                 alt="Logo"
-                width={150}
+                // width={150}
                 height={40}
               />
               {/* Smartmark Company logo Dark mode */}
               <img
                 className="hidden dark:block"
-                src="/images/logo/smartmarklogo.jpeg"
+                src="/images/logo/gbslogosidebar.jpg"
                 alt="Logo"
                 width={150}
                 height={40}
@@ -493,8 +503,14 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots className="size-6" />
                 )}
               </h2>
-              {renderMenuItems(isauthenticated ? (user.role == `SuperAdmin`?supernavItems:navItems) : loginItems, "main")}
-
+              {renderMenuItems(
+                isauthenticated
+                  ? user.role == `SuperAdmin`
+                    ? supernavItems
+                    : navItems
+                  : loginItems,
+                "main"
+              )}
             </div>
             {/* <div className="">
               <h2

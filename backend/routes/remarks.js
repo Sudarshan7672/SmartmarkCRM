@@ -22,14 +22,14 @@ router.post("/add", async (req, res) => {
 
     const remark = {
       remark: text,
-      remarkby: "System", // Optional: You can replace this with the actual user
+      remarkby: req.user?.fullname, // Optional: You can replace this with the actual user
       image: "", // Optional: set to default or from req.body
       logtime: new Date(),
     };
 
     lead.remarks.push(remark);
     await lead.save();
-    await createRemarkNotification({ lead_id: lead_id, remarkby: req.user?.email || "Unknown User" });
+    await createRemarkNotification({ lead_id: lead_id, remarkby: req.user?.fullname || "Unknown User" });
     console.log("Remark added successfully:", remark);
 
     res.status(201).json({ message: "Remark added successfully.", remark });

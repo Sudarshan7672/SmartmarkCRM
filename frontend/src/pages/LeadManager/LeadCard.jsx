@@ -11,10 +11,12 @@ import {
   FaPlus,
   FaCalendarPlus,
 } from "react-icons/fa";
+import { toast } from "react-toastify"; // Optional for feedback
 import AddFollowUp from "../../components/Modals/AddFollowUpModal";
 import EditRemarkModal from "../../components/Modals/EditRemarkModal";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
+import PageMeta from "../../components/common/PageMeta";
 
 const SECTIONS = {
   DETAILS: "details",
@@ -56,7 +58,13 @@ export default function LeadCard({
   const handleSubmitEditRemark = async (text) => {
     const { lead_id, remark_id } = editingRemark;
     try {
-      await axios.put(`${BACKEND_URL}/remarks/${lead_id}/${remark_id}`, { text });
+      await axios.put(
+        `${BACKEND_URL}/remarks/${lead_id}/${remark_id}`,
+        { text },
+        {
+          withCredentials: true,
+        }
+      );
       await fetchLeads(); // Fetch leads again after editing remark
       // onEditRemark?.(); // Refresh remarks if handler is passed
     } catch (error) {
@@ -112,7 +120,12 @@ export default function LeadCard({
       {
         icon: <FaInfoCircle className="text-blue-500" />,
         label: "Is FCA",
-        value: leadData.isfca !== undefined ? (leadData.isfca ? "Yes" : "No") : "N/A",
+        value:
+          leadData.isfca !== undefined
+            ? leadData.isfca
+              ? "Yes"
+              : "No"
+            : "N/A",
       },
       {
         icon: <FaInfoCircle className="text-blue-500" />,
@@ -157,7 +170,13 @@ export default function LeadCard({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm">
         {items.map((item, index) => (
-          <DetailCard key={index} icon={item.icon} label={item.label} value={item.value} user={user} />
+          <DetailCard
+            key={index}
+            icon={item.icon}
+            label={item.label}
+            value={item.value}
+            user={user}
+          />
         ))}
       </div>
     );
@@ -197,30 +216,30 @@ export default function LeadCard({
               <div className="flex space-x-2 ml-4">
                 {user.can_edit_remark && (
                   <button
-                  title="Edit Remark"
-                  aria-label="Edit Remark"
-                  onClick={() => {
-                    setEditingRemark({
-                      lead_id: leadData.lead_id,
-                      remark_id: remark._id,
-                      text: remark.remark,
-                    });
-                    setIsEditRemarkModalOpen(true);
-                  }}
-                  className="text-blue-500 hover:text-blue-600 transition"
-                >
-                  <FaEdit />
-                </button>
+                    title="Edit Remark"
+                    aria-label="Edit Remark"
+                    onClick={() => {
+                      setEditingRemark({
+                        lead_id: leadData.lead_id,
+                        remark_id: remark._id,
+                        text: remark.remark,
+                      });
+                      setIsEditRemarkModalOpen(true);
+                    }}
+                    className="text-blue-500 hover:text-blue-600 transition"
+                  >
+                    <FaEdit />
+                  </button>
                 )}
                 {user.can_delete_remark && (
                   <button
-                  title="Delete Remark"
-                  aria-label="Delete Remark"
-                  onClick={() => onDeleteRemark(leadData.lead_id, remark._id)}
-                  className="text-red-500 hover:text-red-600 transition"
-                >
-                  <FaTrash />
-                </button>
+                    title="Delete Remark"
+                    aria-label="Delete Remark"
+                    onClick={() => onDeleteRemark(leadData.lead_id, remark._id)}
+                    className="text-red-500 hover:text-red-600 transition"
+                  >
+                    <FaTrash />
+                  </button>
                 )}
               </div>
             </li>
@@ -233,6 +252,11 @@ export default function LeadCard({
   );
 
   return (
+    <>
+    <PageMeta
+        title="Lead Details"
+        description="View and manage lead details, remarks, and follow-ups."
+      />
     <div className="border p-6 rounded-2xl shadow-lg bg-gradient-to-br from-white to-blue-50 w-full hover:shadow-xl transition-all space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-center p-3 rounded-xl bg-white shadow hover:shadow-lg transition-all">
@@ -241,7 +265,17 @@ export default function LeadCard({
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-bold text-blue-600 flex items-center gap-2">
                 <FaUser className="text-blue-500" />
-                {leadData.firstname} {leadData.lastname} ({leadData.lead_id})
+                {leadData.firstname} {leadData.lastname} (
+                <span
+                  className="cursor-pointer text-blue-500 hover:underline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(leadData.lead_id);
+                    toast.success("Lead ID copied to clipboard!");
+                  }}
+                >
+                  {leadData.lead_id}
+                </span>
+                )
               </h2>
               <span className="text-sm px-3 py-1.5 bg-green-100 text-green-800 rounded-full font-medium">
                 {leadData.status || "N/A"}
@@ -259,32 +293,28 @@ export default function LeadCard({
         <div className="flex space-x-3 mt-4 md:mt-0">
           {user.can_edit_lead && (
             <button
-            onClick={() => onEditLead(leadData.lead_id)}
-            className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition"
-          >
-            <FaEdit /> Edit
-          </button>
+              onClick={() => onEditLead(leadData.lead_id)}
+              className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition"
+            >
+              <FaEdit /> Edit
+            </button>
           )}
-          {
-            user.can_delete_lead &&(
-              <button
-            onClick={() => onDeleteLead(leadData.lead_id)}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 transition"
-          >
-            <FaTrash /> Delete
-          </button>
-            )
-          }
-          {
-            user.can_add_followup && (
-              <button
-            onClick={() => setIsFollowUpModalOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
-          >
-            <FaCalendarPlus /> Add Follow Up
-          </button>
-            )
-          }
+          {user.can_delete_lead && (
+            <button
+              onClick={() => onDeleteLead(leadData.lead_id)}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 transition"
+            >
+              <FaTrash /> Delete
+            </button>
+          )}
+          {user.can_add_followup && (
+            <button
+              onClick={() => setIsFollowUpModalOpen(true)}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
+            >
+              <FaCalendarPlus /> Add Follow Up
+            </button>
+          )}
         </div>
       </div>
 
@@ -325,5 +355,6 @@ export default function LeadCard({
         initialText={editingRemark.text}
       />
     </div>
+    </>
   );
 }

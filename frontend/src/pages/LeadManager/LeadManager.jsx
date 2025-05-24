@@ -5,6 +5,7 @@ import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
 import AddRemarkModal from "../../components/Modals/AddRemarkModal";
 import { useNavigate } from "react-router-dom";
+import PageMeta from "../../components/common/PageMeta";
 
 const LeadManager = () => {
   const [leads, setLeads] = useState([]);
@@ -23,34 +24,60 @@ const LeadManager = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState({});
+  const [statusCounts, setStatusCounts] = useState({});
 
   useEffect(() => {
-    axios.get(`${BACKEND_URL}/auth/isauthenticated`, {
-      withCredentials: true,
-    }).then((response) => {
-      setIsLoggedIn(response.data.isauthenticated);
-      setUser(response.data.user);
-      console.log("User data:", response.data.user);
-      if (!response.data.isauthenticated) {
-        navigate("/");
-      }
-    }).catch((error) => {
-      console.error("Error checking authentication:", error);
-    });
+    axios
+      .get(`${BACKEND_URL}/auth/isauthenticated`, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setIsLoggedIn(response.data.isauthenticated);
+        setUser(response.data.user);
+        console.log("User data:", response.data.user);
+        if (!response.data.isauthenticated) {
+          navigate("/");
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking authentication:", error);
+      });
   }, [navigate]);
 
+  // const fetchLeads = useCallback(async () => {
+  //   try {
+  //     const response = await axios.get(`${BACKEND_URL}/leads/get-leads`, {
+  //       params: status !== "All" ? { status } : {},
+  //     });
+  //     setLeads(Array.isArray(response.data) ? response.data.reverse() : []);
+  //   } catch (error) {
+  //     console.error(
+  //       "Error fetching leads:",
+  //       error.response?.data || error.message
+  //     );
+  //     setLeads([]);
+  //   }
+  // }, [status]);
+
   const fetchLeads = useCallback(async () => {
+    console.log("Fetching leads with status:", status);
     try {
       const response = await axios.get(`${BACKEND_URL}/leads/get-leads`, {
-        params: status !== "All" ? { status } : {},
+        params: { status: status || "All" },
+        withCredentials: true,
       });
-      setLeads(Array.isArray(response.data) ? response.data.reverse() : []);
+
+      const { leads, statusCounts } = response.data;
+
+      setLeads(Array.isArray(leads) ? leads.reverse() : []);
+      setStatusCounts(statusCounts || {});
     } catch (error) {
       console.error(
         "Error fetching leads:",
         error.response?.data || error.message
       );
       setLeads([]);
+      setStatusCounts({});
     }
   }, [status]);
 
@@ -59,20 +86,36 @@ const LeadManager = () => {
   }, [fetchLeads]);
 
   const handleDeleteLead = async (leadId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this lead?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this lead?"
+    );
     if (!confirmDelete) return;
-  
+
     try {
-      await axios.delete(`${BACKEND_URL}/leads/delete/${leadId}`);
+      const reason = prompt("Please provide a reason for deleting this lead:");
+      if (!reason) {
+        alert("Deletion cancelled. Reason is required.");
+        return;
+      }
+      await axios.delete(`${BACKEND_URL}/leads/delete/${leadId}`, {
+        data: { reason }, // send reason in request body
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       setLeads((prev) => prev.filter((lead) => lead.lead_id !== leadId));
+      // window.location.reload();\
+      // onRefresh();
+      fetchLeads();
     } catch (error) {
+      window.alert("Error deleting lead. Please try again later.");
       console.error(
         "Error deleting lead:",
         error.response?.data || error.message
       );
     }
   };
-  
 
   const handleEditLead = (lead) => {
     setSelectedLead(lead);
@@ -83,7 +126,8 @@ const LeadManager = () => {
     try {
       await axios.put(
         `${BACKEND_URL}/leads/update/${updatedLead.lead_id}`,
-        updatedLead
+        updatedLead,
+        { withCredentials: true }
       );
       setLeads((prev) =>
         prev.map((lead) =>
@@ -124,6 +168,8 @@ const LeadManager = () => {
       await axios.post(`${BACKEND_URL}/remarks/add`, {
         text: text,
         lead_id: currentLeadId,
+      },{
+        withCredentials: true,
       });
       fetchLeads();
     } catch (error) {
@@ -145,7 +191,9 @@ const LeadManager = () => {
     );
     if (!confirmed) return;
     try {
-      await axios.delete(`${BACKEND_URL}/remarks/${lead_id}/${remark_id}`);
+      await axios.delete(`${BACKEND_URL}/remarks/${lead_id}/${remark_id}`,{
+        withCredentials: true,
+      });
       fetchLeads();
     } catch (error) {
       console.error("Error deleting remark:", error.message);
@@ -165,6 +213,11 @@ const LeadManager = () => {
   ];
 
   return (
+    <>
+    <PageMeta
+        title="Lead Manager"
+        description="Manage your leads efficiently with our Lead Manager. View, edit, and track the status of your leads."
+      />
     <div className="p-4">
       <div className="flex space-x-2 mb-4 overflow-x-auto scrollbar-hide">
         {statuses.map((s) => (
@@ -175,9 +228,26 @@ const LeadManager = () => {
               status === s
                 ? "bg-blue-500 text-white"
                 : "bg-white text-blue-500 border-blue-500"
-            } transition-all`}
+            } transition-all whitespace-nowrap`}
           >
             {s}
+            {(() => {
+              if (s === "All") {
+                const total = Object.values(statusCounts).reduce(
+                  (acc, val) => acc + val,
+                  0
+                );
+                return total > 0 ? (
+                  <span className="ml-1 text-sm font-semibold">({total})</span>
+                ) : null;
+              } else {
+                return statusCounts[s] ? (
+                  <span className="ml-1 text-sm font-semibold">
+                    ({statusCounts[s]})
+                  </span>
+                ) : null;
+              }
+            })()}
           </button>
         ))}
       </div>
@@ -199,9 +269,7 @@ const LeadManager = () => {
             />
           ))
         ) : (
-          <p className="text-center text-gray-500">
-            Loading...
-          </p>
+          <p className="text-center text-gray-500">No Leads Found.</p>
         )}
       </div>
 
@@ -227,6 +295,7 @@ const LeadManager = () => {
         isLoggedIn={isLoggedIn}
       />
     </div>
+    </>
   );
 };
 

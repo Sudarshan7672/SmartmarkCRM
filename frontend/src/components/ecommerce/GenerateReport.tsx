@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import BASE_URL from "../../configs/constants";
+import BACKEND_URL from "../../configs/constants";
 
 export default function GenerateReport() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +20,7 @@ export default function GenerateReport() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${BASE_URL}/reports/new`,
+        `${BACKEND_URL}/reports/new`,
         {
           startDate,
           endDate,
@@ -28,6 +28,7 @@ export default function GenerateReport() {
         },
         {
           responseType: "blob",
+          withCredentials: true,
         }
       );
 
@@ -61,7 +62,7 @@ export default function GenerateReport() {
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-10">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
             <h2 className="text-xl font-semibold mb-4">Generate Report</h2>
 

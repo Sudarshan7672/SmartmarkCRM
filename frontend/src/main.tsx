@@ -7,13 +7,16 @@ import "flatpickr/dist/flatpickr.css";
 import App from "./App.tsx";
 import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
+import { SearchProvider } from "./context/SearchContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
-      <AppWrapper>
-        <App />
-      </AppWrapper>
+      <SearchProvider>
+        <AppWrapper>
+          <App />
+        </AppWrapper>
+      </SearchProvider>
     </ThemeProvider>
   </StrictMode>
 );

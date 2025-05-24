@@ -36,6 +36,7 @@ const notificationSchema = new mongoose.Schema({
   expiry: { type: Date, default: () => Date.now() + 7 * 24 * 60 * 60 * 1000 }, // 1 week expiry
 });
 
-const Notification = mongoose.model("Notification", notificationSchema);
+module.exports =
+  mongoose.models.Notification ||
+  mongoose.model("Notification", notificationSchema);
 
-module.exports = Notification;

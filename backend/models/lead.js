@@ -1,4 +1,6 @@
 const { default: mongoose } = require("mongoose");
+const { Schema } = mongoose;  // <-- add this line
+
 
 const leadSchema = new mongoose.Schema({
   lead_id: {
@@ -130,40 +132,37 @@ const leadSchema = new mongoose.Schema({
   updatelogs: {
     type: [
       {
-        updatedby: {
-          type: String,
-          required: true,
-        },
-        updatedfields: {
-          type: [String],
-          required: true,
-        },
+        updatedby: { type: String, required: true },
+        updatedfields: { type: [String], required: true },
+        changes: [
+          {
+            field: { type: String },
+            oldValue: { type: Schema.Types.Mixed },
+            newValue: { type: Schema.Types.Mixed }
+          }
+        ],
         logtime: { type: Date, default: Date.now },
       },
     ],
-    required: false,
     default: [],
   },
-  transferredtologs: {
-    type: [
-      {
-        transferredto: {
-          author: String,
-          primarycategory: String,
-          secondarycategory: String,
-        },
-        transferredby: {
-          author: String,
-          primarycategory: String,
-          secondarycategory: String,
-        },
-        remark: String,
-        logtime: { type: Date, default: Date.now },
+  
+  transferredtologs: [
+    {
+      transferredto: {
+        author: String,
+        primarycategory: String,
+        secondarycategory: String,
       },
-    ],
-    required: false,
-    default: [],
-  },
+      transferredby: {
+        author: String,
+        primarycategory: String,
+        secondarycategory: String,
+      },
+      remark: String,
+      logtime: Date,
+    }
+  ],
   notification_logs: {
     type: [
       {
@@ -208,13 +207,22 @@ leadSchema.pre("findOneAndUpdate", function (next) {
 // Delete follow-ups when a lead is deleted
 leadSchema.pre("findOneAndDelete", async function (next) {
   const FollowUp = require("./FollowUp");
+  const Notification = require("./Notification"); // Import your Notification model
   const lead = await this.model.findOne(this.getQuery());
   console.log("Lead to be deleted:", lead);
+  console.log("Lead ID:", lead._id);
 
   if (lead) {
+    // Delete follow-ups
     await FollowUp.deleteMany({ leadId: lead._id });
+
+    // Delete notifications linked to this lead
+    await Notification.deleteMany({ lead_id: lead.lead_id });
   }
+
   next();
 });
 
-module.exports = mongoose.model("Lead", leadSchema);
+
+module.exports = mongoose.models.Lead || mongoose.model("Lead", leadSchema, "leads");
+

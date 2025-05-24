@@ -25,6 +25,8 @@ const AddFollowUpModal = ({ isOpen, onClose, lead_id }) => {
         followUpDate: formattedDate,
         status,
         notes,
+      },{
+        withCredentials: true,
       });
 
       window.location.reload();
@@ -39,7 +41,7 @@ const AddFollowUpModal = ({ isOpen, onClose, lead_id }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-50">
+    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-50 z-20">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-xl font-semibold mb-4">Add Follow-Up</h2>
         <form onSubmit={handleSubmit}>

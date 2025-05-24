@@ -19,6 +19,8 @@ const generateReport = async (req, res) => {
       },
     }).lean();
 
+    console.log("Leads found:", leads);
+
     if (!leads || leads.length === 0) {
       return res.status(404).json({ message: "No leads found in selected range." });
     }

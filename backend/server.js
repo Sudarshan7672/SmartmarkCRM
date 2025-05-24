@@ -73,6 +73,7 @@ var corsOptions = {
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
+    "https://pc52v556-5173.inc1.devtunnels.ms/",
   ],
   // origin: [""], // Allow specific domains
   credentials: true,
@@ -153,6 +154,12 @@ app.use("/api/v1/remarks", require("./routes/remarks.js"));
 const User = require("./models/userschema.js");
 // auth routes
 app.use("/api/v1/auth", require("./routes/auth.js"));
+
+// notification routes
+app.use("/api/v1/notifications", require("./routes/notification.js"));
+
+// log routes
+app.use("/api/v1/logs", require("./routes/logs.js"));
 
 // super admin routes
 app.use("/api/v1/superadmin", require("./routes/superadmin.js"));

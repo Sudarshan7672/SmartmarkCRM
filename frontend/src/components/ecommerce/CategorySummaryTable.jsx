@@ -8,7 +8,9 @@ export default function CategorySummaryTable() {
 
   useEffect(() => {
     axios
-      .get(`${BACKEND_URL}/dashboard/lead-category-summary`)
+      .get(`${BACKEND_URL}/dashboard/lead-category-summary`,{
+        withCredentials: true,
+      })
       .then((res) => {
         setSummary(res.data.data || []);
         // console.log('Lead category summary data:', res.data.data);

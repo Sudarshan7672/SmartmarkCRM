@@ -73,7 +73,9 @@ const Calendar = () => {
 
   const fetchFollowUps = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/followups`);
+      const response = await axios.get(`${BACKEND_URL}/followups`,{
+        withCredentials: true,
+      });
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -136,7 +138,9 @@ const Calendar = () => {
 
     try {
       const resolvedLeadId = typeof leadId === "object" ? leadId._id : leadId;
-      const res = await axios.get(`${BACKEND_URL}/leads/${resolvedLeadId}`);
+      const res = await axios.get(`${BACKEND_URL}/leads/${resolvedLeadId}`,{
+        withCredentials: true,
+      });
       setLeadDetails(res.data);
     } catch (err) {
       setLeadDetails(null);
@@ -151,7 +155,9 @@ const Calendar = () => {
     setConfirmMessage(`Are you sure you want to delete the follow-up titled "${selectedFollowUp.title}"?`);
     setConfirmAction(() => async () => {
       try {
-        await axios.delete(`${BACKEND_URL}/followups/${selectedFollowUp._id}`);
+        await axios.delete(`${BACKEND_URL}/followups/${selectedFollowUp._id}`,{
+          withCredentials: true,
+        });
         fetchFollowUps();
         closeModal();
         resetModalFields();
@@ -179,6 +185,8 @@ const Calendar = () => {
             followUpDate: formattedDate,
             status: newStatus,
             notes: followUpNotes,
+          },{
+            withCredentials: true,
           });
           fetchFollowUps();
           closeModal();
@@ -197,6 +205,8 @@ const Calendar = () => {
           followUpDate: formattedDate,
           status: followUpStatus,
           notes: followUpNotes,
+        },{
+          withCredentials: true,
         });
         fetchFollowUps();
         closeModal();
@@ -218,7 +228,7 @@ const Calendar = () => {
   };
 
   const ConfirmModal = ({ message, onConfirm, onCancel }: { message: string; onConfirm: () => void; onCancel: () => void }) => (
-    <Modal isOpen={true}  onClose={onCancel}>
+    <Modal isOpen={true}  onClose={onCancel} className="w-full max-w-md mx-auto">
       <div className="bg-white p-10 rounded-2xl max-w-md mx-auto shadow-2xl">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Please Confirm</h3>
         <p className="text-sm text-gray-600 mb-6">{message}</p>
@@ -232,7 +242,7 @@ const Calendar = () => {
 
   return (
     <>
-      <PageMeta title="Calendar" description="Manage your follow-ups and schedules." />
+      <PageMeta title="Follow-up Manager" description="Manage your follow-ups and schedules." />
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-lg">
         <FullCalendar
           ref={calendarRef}
