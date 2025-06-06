@@ -69,13 +69,17 @@ app.use(morgan("dev")); // Log requests to the console
 // Enable CORS
 // const cors = require("cors");
 var corsOptions = {
+  // origin: [
+  //   "http://localhost:5173",
+  //   "http://localhost:5174",
+  //   "http://localhost:5175",
+  //   "https://pc52v556-5173.inc1.devtunnels.ms/",
+  // ],
   origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "https://pc52v556-5173.inc1.devtunnels.ms/",
-  ],
-  // origin: [""], // Allow specific domains
+  "https://www.smartmark.gurubrandingservices.com",
+  "https://smartmark.gurubrandingservices.com"
+],
+ // Allow specific domains
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
