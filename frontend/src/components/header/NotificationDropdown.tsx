@@ -10,10 +10,17 @@ import BACKEND_URL from "../../configs/constants";
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
 
+type Notification = {
+  _id: string;
+  msg: string;
+  timestamp: string;
+  type: string;
+};
+
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isMuted, setIsMuted] = useState(false); // 🔇 Mute state
   const lastNotificationId = useRef<string | null>(null);
@@ -73,7 +80,7 @@ export default function NotificationDropdown() {
   const toggleMute = () => setIsMuted(!isMuted);
 
   const groupByDate = () => {
-    const groups: { [date: string]: any[] } = {};
+    const groups: { [date: string]: Notification[] } = {};
 
     for (const notif of notifications) {
       const date = dayjs(notif.timestamp);

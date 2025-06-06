@@ -4,7 +4,7 @@ import LeadManager from './pages/LeadManager/LeadManager.jsx'
 import LeadForm from './pages/LeadManager/LeadForm.jsx'
 import BulkUploadManager from './pages/LeadManager/BulkUploadManager.jsx'
 import BulkAction from './pages/LeadManager/BulkAction.jsx'
-import SignUp from "./pages/AuthPages/SignUp";
+// import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";

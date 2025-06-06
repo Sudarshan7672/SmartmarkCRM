@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  GroupIcon,
-  BoxIconLine,
-} from "../../icons";
+// import {
+//   GroupIcon,
+//   BoxIconLine,
+// } from "../../icons";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
 
@@ -19,8 +19,20 @@ import {
 } from "lucide-react";
 
 
+type Metrics = {
+  total: number;
+  newLeads: number;
+  notConnected: number;
+  hot: number;
+  cold: number;
+  reEnquired: number;
+  converted: number;
+  transferred: number;
+  unassigned: number;
+};
+
 export default function EcommerceMetrics() {
-  const [metrics, setMetrics] = useState(null);
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
     const fetchMetrics = async () => {

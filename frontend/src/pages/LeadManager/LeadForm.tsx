@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import ButtonLoader from "../../components/common/ButtonLoader";
+type User = {
+  can_add_individual_lead?: boolean;
+  can_add_bulk_lead?: boolean;
+  // add other user properties as needed
+};
+
 const LeadForm = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState<User>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -96,12 +102,12 @@ const LeadForm = () => {
     });
   };
 
-  const validatePhoneNumber = (number) => {
+  const validatePhoneNumber = (number: string) => {
     const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(number);
   };
 
-  const validateEmail = (email) => {
+  const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
@@ -129,9 +135,10 @@ const LeadForm = () => {
     setIsLoading(true);
     setMessage("");
 
+    let leadResponse;
     try {
       // Step 1: Create Lead
-      const leadResponse = await axios.post(
+      leadResponse = await axios.post(
         `${BACKEND_URL}/leads/add`,
         formData,
         {
@@ -167,8 +174,12 @@ const LeadForm = () => {
     } catch (error) {
       setIsLoading(false);
       console.error("Error submitting lead:", error);
-      const errorMessage =
-        error.response?.data?.error || error.message || "Something went wrong";
+      let errorMessage = "Something went wrong";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.error || error.message || "Something went wrong";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       setMessage(`Error: ${errorMessage}`);
 
       // Rollback lead creation if follow-up fails
@@ -431,7 +442,7 @@ const LeadForm = () => {
           </label>
 
           {/* Submit Button */}
-          {user.can_add_individual_lead && (
+          {user.can_add_individual_lead && isLoggedIn && (
             <div className="col-span-2">
               <button
                 type="submit"
@@ -443,7 +454,7 @@ const LeadForm = () => {
       }`}
                 disabled={isLoading}
               >
-                {isLoading ? <ButtonLoader /> : "Add Lead"}
+                {loading ? <ButtonLoader /> : "Add Lead"}
               </button>
             </div>
           )}

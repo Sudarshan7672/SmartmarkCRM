@@ -116,11 +116,11 @@ const Calendar = () => {
     }
   };
 
-  const handleDateSelect = (selectInfo: any) => {
-    resetModalFields();
-    setFollowUpDate(new Date(selectInfo.startStr));
-    openModal();
-  };
+  // const handleDateSelect = (selectInfo: any) => {
+  //   resetModalFields();
+  //   setFollowUpDate(new Date(selectInfo.startStr));
+  //   openModal();
+  // };
 
   const handleFollowUpClick = async (clickInfo: any) => {
     const followUp = clickInfo.event;
@@ -293,7 +293,8 @@ const Calendar = () => {
         description="Manage your follow-ups and schedules."
       />
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-lg dark:shadow-black">
-  <FullCalendar
+   {isLoggedIn && (
+    <FullCalendar
     ref={calendarRef}
     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
     initialView="dayGridMonth"
@@ -306,6 +307,7 @@ const Calendar = () => {
     selectable
     eventClick={handleFollowUpClick}
   />
+   )}
 </div>
 
 <Modal isOpen={isOpen} onClose={closeModal} user={user}>

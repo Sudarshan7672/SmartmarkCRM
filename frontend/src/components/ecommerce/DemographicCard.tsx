@@ -3,12 +3,18 @@ import axios from "axios";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import CountryMap from "./CountryMap";
+// import CountryMap from "./CountryMap";
 import BACKEND_URL  from "../../configs/constants";
+
+type CountryDataItem = {
+  country: string;
+  total: number;
+  percentage: number;
+};
 
 export default function DemographicCard() {
   const [isOpen, setIsOpen] = useState(false);
-  const [countryData, setCountryData] = useState([]);
+  const [countryData, setCountryData] = useState<CountryDataItem[]>([]);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);

@@ -1,5 +1,5 @@
 // ...imports remain the same
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -7,8 +7,8 @@ import BACKEND_URL from "../../configs/constants";
 
 export default function GenerateReport() {
   const [isOpen, setIsOpen] = useState(false);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [reportType, setReportType] = useState("source");
   const [fileType, setFileType] = useState("xlsx");
   const [loading, setLoading] = useState(false);
@@ -55,35 +55,40 @@ export default function GenerateReport() {
       link.click();
       document.body.removeChild(link);
       setMessage("✅ Report downloaded successfully!");
-    } catch (err) {
-      if (err.response && err.response.data instanceof Blob) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const json = JSON.parse(reader.result);
-            setMessage(`❌ ${json.error || "Error generating report"}`);
-          } catch (parseErr) {
-            console.error("Failed to parse error blob:", parseErr);
-            setMessage("❌ Failed to generate report (invalid error format)");
-          }
-        };
-        reader.readAsText(err.response.data);
-      } else if (err.response) {
-        console.error("Backend error:", err.response.data);
-        setMessage(`❌ ${err.response.data.error || "Unknown server error"}`);
-      } else if (err.request) {
-        console.error("No response received:", err.request);
-        setMessage("❌ No response from server. Please check your connection.");
-      } else {
-        console.error("Error:", err.message);
-        setMessage(`❌ ${err.message}`);
-      }
-    } finally {
+    } catch (err: unknown) {
+  if (axios.isAxiosError(err)) {
+    if (err.response && err.response.data instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const json = JSON.parse(reader.result as string);
+          setMessage(`❌ ${json.error || "Error generating report"}`);
+        } catch (parseErr) {
+          console.error("Failed to parse error blob:", parseErr);
+          setMessage("❌ Failed to generate report (invalid error format)");
+        }
+      };
+      reader.readAsText(err.response.data);
+    } else if (err.response) {
+      console.error("Backend error:", err.response.data);
+      setMessage(`❌ ${err.response.data.error || "Unknown server error"}`);
+    } else if (err.request) {
+      console.error("No response received:", err.request);
+      setMessage("❌ No response from server. Please check your connection.");
+    } else {
+      console.error("Axios error:", err.message);
+      setMessage(`❌ ${err.message}`);
+    }
+  } else {
+    console.error("Non-Axios error:", err);
+    setMessage("❌ An unknown error occurred.");
+  }
+} finally {
       setLoading(false);
     }
   };
 
-  const handleQuickPick = (range) => {
+  const handleQuickPick = (range: "last7" | "thisMonth") => {
     const now = new Date();
     if (range === "last7") {
       const prev = new Date();

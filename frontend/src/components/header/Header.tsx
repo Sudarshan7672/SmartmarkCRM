@@ -3,10 +3,10 @@ import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import { Link } from "react-router";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import BACKEND_URL from "../../configs/constants";
+// import { useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import BACKEND_URL from "../../configs/constants";
 
 interface User {
   username: string;
@@ -36,6 +36,9 @@ interface HeaderProps {
 }
 const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+
+  // Temporary dummy user object to avoid error
+  const [user] = useState<User | null>(null);
 
   const toggleApplicationMenu = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);

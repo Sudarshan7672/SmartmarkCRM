@@ -120,7 +120,7 @@ const RaiseTicket = () => {
       />
     </div>
 
-    {user.can_raise_ticket && (
+    {user.can_raise_ticket && isLoggedIn && (
       <div className="text-right">
         <button
           type="submit"

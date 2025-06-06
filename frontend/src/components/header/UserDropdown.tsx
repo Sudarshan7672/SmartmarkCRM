@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
+// import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 
 interface User {
@@ -25,7 +25,11 @@ interface User {
   can_generate_report: boolean;
 }
 
-export default function UserDropdown({ user }: { user: User }) {
+interface UserDropdownProps {
+  user: User;
+}
+
+export default function UserDropdown({ user }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   function toggleDropdown() {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import ChartTab from "../common/ChartTab";
+// import ChartTab from "../common/ChartTab";
 import BACKEND_URL from "../../configs/constants";
 
 export default function StatisticsChart() {

@@ -1,4 +1,4 @@
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 // import axios from "axios";
 
@@ -13,7 +13,6 @@ import {
   PageIcon,
   PieChartIcon,
   PlugInIcon,
-  TableIcon,
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
@@ -520,7 +519,7 @@ const roleBasedMenus: Record<UserRole, NavItem[]> = {
               </h2>
               {renderMenuItems(
                 isauthenticated
-                  ? roleBasedMenus[user.role as UserRole] || navItems // fallback to default navItems if role not found
+                  ? roleBasedMenus[user.role as UserRole] || usernavItems // fallback to default usernavItems if role not found
                   : loginItems,
                 "main"
               )}
