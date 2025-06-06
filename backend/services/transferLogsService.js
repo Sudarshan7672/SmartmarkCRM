@@ -1,6 +1,6 @@
 // services/transferLogsService.js
 
-const Lead = require("../models/Lead");
+const Lead = require("../models/lead");
 
 /**
  * Appends a new entry to the transferredtologs array of a specific lead.
