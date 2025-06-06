@@ -68,7 +68,7 @@ app.use(morgan("dev")); // Log requests to the console
 
 // Enable CORS
 // const cors = require("cors");
-var corsOptions = {
+const corsOptions = {
   // origin: [
   //   "http://localhost:5173",
   //   "http://localhost:5174",
