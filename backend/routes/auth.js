@@ -4,6 +4,7 @@ const express = require("express");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const User = require("../models/userschema"); // adjust path as needed
+const UserActivity = require("../models/useractivity"); // adjust path as needed
 
 const router = express.Router();
 
@@ -68,8 +69,27 @@ router.post("/register", async (req, res) => {
 });
 
 // LOGIN
-router.post("/login", passport.authenticate("local"), (req, res) => {
-  res.status(200).json({ message: "Logged in successfully", user: req.user });
+router.post("/login", passport.authenticate("local"), async (req, res) => {
+  try {
+    // Create a new UserActivity record with loginTime = now
+    console.log("User logged in:", req.user);
+    const activity = new UserActivity({
+      userId: req.user._id,
+      loginTime: new Date(),
+    });
+
+    await activity.save();
+
+    // Save activity _id in session for logout tracking
+    //   req.session.activityId = activity._id;
+
+    res.status(200).json({ message: "Logged in successfully", user: req.user });
+  } catch (error) {
+    console.error("Login activity save failed:", error);
+    res
+      .status(500)
+      .json({ message: "Login succeeded but failed to save activity." });
+  }
 });
 
 // CHECK AUTHENTICATION
@@ -81,27 +101,43 @@ router.get("/isAuthenticated", (req, res) => {
   }
 });
 
-// LOGOUT
-router.get("/logout", (req, res, next) => {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-
-    // Destroy the session after logout
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Failed to destroy session during logout:", err);
-        return res.status(500).json({ message: "Logout failed" });
+// logout route
+router.get("/logout", async (req, res, next) => {
+    try {
+      // Check if user is logged in and get userId before logout
+      const userId = req.user?._id;
+  
+      // Call logout (promisify it)
+      await new Promise((resolve, reject) => {
+        req.logout((err) => (err ? reject(err) : resolve()));
+      });
+  
+      // Destroy session
+      await new Promise((resolve, reject) => {
+        req.session.destroy((err) => (err ? reject(err) : resolve()));
+      });
+  
+      // Update UserActivity logoutTime if userId exists
+      if (userId) {
+        // Update the latest activity where logoutTime is not set
+        await UserActivity.findOneAndUpdate(
+          { userId: userId, logoutTime: { $exists: false } },
+          { logoutTime: new Date() },
+          { sort: { loginTime: -1 } }
+        );
       }
-      // Clear the cookie as well (optional, but recommended)
+  
+      // Clear cookie
       res.clearCookie("connect.sid");
+  
       console.log("User logged out successfully");
       return res.status(200).json({ message: "Logged out successfully" });
-    });
+    } catch (err) {
+      console.error("Logout error:", err);
+      return next(err);
+    }
   });
-});
-
+  
 // UNREGISTER (delete account)
 router.delete("/unregister", async (req, res) => {
   if (!req.isAuthenticated())

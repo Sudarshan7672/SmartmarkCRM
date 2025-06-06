@@ -6,6 +6,10 @@ const FollowUpSchema = new mongoose.Schema({
     ref: "Lead", // Assuming you have a Lead model
     required: true,
   },
+  addedBy: {
+    type:String,
+    required: true,
+  },
   title: {
     type: String,
     required: true,

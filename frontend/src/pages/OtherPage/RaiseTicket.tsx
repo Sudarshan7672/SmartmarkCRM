@@ -79,59 +79,61 @@ const RaiseTicket = () => {
       title="Raise a Ticket"
       description="If you are facing any issues, please raise a ticket and we will get back to you as soon as possible."
     />
-    <div className="max-w-xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Raise a Ticket</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">Name</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-          />
-        </div>
+    <div className="max-w-xl mx-auto p-6 bg-white dark:bg-gray-900 shadow-lg rounded-lg">
+  <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Raise a Ticket</h2>
 
-        <div>
-          <label className="block font-medium mb-1">Issue Type</label>
-          <select
-            className="w-full border p-2 rounded"
-            value={issue}
-            onChange={(e) => setIssue(e.target.value)}
-          >
-            <option value="">Select an issue</option>
-            <option value="Login Issue">Login Issue</option>
-            <option value="Data Missing">Data Missing</option>
-            <option value="Bug Report">Bug Report</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">Description</label>
-          <textarea
-            className="w-full border p-2 rounded"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe your issue in detail"
-          />
-        </div>
-
-        {user.can_raise_ticket && (
-          <div className="text-right">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? "Submitting..." : "Submit Ticket"}
-          </button>
-        </div>
-        )}
-      </form>
+  <form onSubmit={handleSubmit} className="space-y-4">
+    <div>
+      <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">Name</label>
+      <input
+        type="text"
+        className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Your name"
+      />
     </div>
+
+    <div>
+      <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">Issue Type</label>
+      <select
+        className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        value={issue}
+        onChange={(e) => setIssue(e.target.value)}
+      >
+        <option value="">Select an issue</option>
+        <option value="Login Issue">Login Issue</option>
+        <option value="Data Missing">Data Missing</option>
+        <option value="Bug Report">Bug Report</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div>
+      <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">Description</label>
+      <textarea
+        className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        rows={4}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Describe your issue in detail"
+      />
+    </div>
+
+    {user.can_raise_ticket && (
+      <div className="text-right">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-50"
+        >
+          {loading ? "Submitting..." : "Submit Ticket"}
+        </button>
+      </div>
+    )}
+  </form>
+</div>
+
     </>
   );
 };

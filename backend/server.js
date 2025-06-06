@@ -133,7 +133,7 @@ app.get("/api", (req, res) => {
 app.use("/api/test", require("./routes/testroute.js")); // Example backend route
 
 // Lead Routes
-app.use("/api/v1/leads", require("./routes/leadroutes.js"));
+app.use("/api/v1/leads", require("./routes/leadRoutes.js"));
 // follow-up routes
 app.use("/api/v1/followups", require("./routes/followup.js"));
 // bulk upload routes
@@ -161,8 +161,15 @@ app.use("/api/v1/notifications", require("./routes/notification.js"));
 // log routes
 app.use("/api/v1/logs", require("./routes/logs.js"));
 
+// user activity routes
+app.use("/api/v1/user-activity", require("./routes/useractivities.js"));
+
 // super admin routes
 app.use("/api/v1/superadmin", require("./routes/superadmin.js"));
+
+// user routes
+app.use('/api/v1/users', require('./routes/user.js'));
+
 
 // Handle 404 errors
 app.use((req, res, next) => {

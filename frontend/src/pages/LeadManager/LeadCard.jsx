@@ -14,6 +14,7 @@ import {
 import { toast } from "react-toastify"; // Optional for feedback
 import AddFollowUp from "../../components/Modals/AddFollowUpModal";
 import EditRemarkModal from "../../components/Modals/EditRemarkModal";
+import DeleteRemarkModal from "../../components/Modals/DeleteRemarkModal";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
 import PageMeta from "../../components/common/PageMeta";
@@ -24,11 +25,15 @@ const SECTIONS = {
 };
 
 const DetailCard = ({ icon, label, value }) => (
-  <div className="flex items-center p-2 bg-white rounded-xl shadow hover:shadow-lg transition-all">
-    <div className="p-2 bg-gray-100 rounded-lg mr-3">{icon}</div>
+  <div className="flex items-center p-2 bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition-all">
+    <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg mr-3">
+      {icon}
+    </div>
     <div>
-      <p className="text-gray-500 text-xs">{label}</p>
-      <p className="font-medium break-words">{value}</p>
+      <p className="text-gray-500 dark:text-gray-400 text-xs">{label}</p>
+      <p className="font-medium break-words text-gray-800 dark:text-white">
+        {value}
+      </p>
     </div>
   </div>
 );
@@ -47,6 +52,13 @@ export default function LeadCard({
   const [activeSection, setActiveSection] = useState(SECTIONS.DETAILS);
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [isEditRemarkModalOpen, setIsEditRemarkModalOpen] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [isDeleteRemarkModalOpen, setIsDeleteRemarkModalOpen] = useState(false);
+  const [remarkToDelete, setRemarkToDelete] = useState({
+    leadId: null,
+    remarkId: null,
+  });
+
   const [editingRemark, setEditingRemark] = useState({
     lead_id: null,
     remark_id: null,
@@ -84,8 +96,13 @@ export default function LeadCard({
       },
       {
         icon: <FaPhone className="text-green-500" />,
-        label: "WhatsApp",
+        label: "contact",
         value: leadData.contact || "N/A",
+      },
+      {
+        icon: <FaPhone className="text-green-500" />,
+        label: "WhatsApp",
+        value: leadData.whatsapp || "N/A",
       },
       {
         icon: <FaBuilding className="text-purple-500" />,
@@ -104,8 +121,8 @@ export default function LeadCard({
       },
       {
         icon: <FaInfoCircle className="text-blue-500" />,
-        label: "Zone",
-        value: leadData.Zone || "N/A",
+        label: "territory",
+        value: leadData.territory || "N/A",
       },
       {
         icon: <FaInfoCircle className="text-blue-500" />,
@@ -183,9 +200,9 @@ export default function LeadCard({
   };
 
   const renderRemarks = () => (
-    <div className="p-6 text-sm bg-white rounded-xl max-h-[300px] overflow-auto shadow hover:shadow-lg transition-all">
+    <div className="p-6 text-sm bg-white dark:bg-gray-900 rounded-xl max-h-[300px] overflow-auto shadow hover:shadow-lg transition-all">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-blue-600 flex items-center">
+        <h3 className="font-semibold text-blue-600 dark:text-blue-400 flex items-center">
           <FaInfoCircle className="mr-2" /> Remarks
         </h3>
         {user.can_add_remark && (
@@ -204,12 +221,14 @@ export default function LeadCard({
           {leadData.remarks.map((remark) => (
             <li
               key={remark._id}
-              className="p-3 bg-gray-100 rounded-lg flex justify-between items-start"
+              className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-between items-start"
             >
-              <div className="flex flex-col text-sm text-gray-700 space-y-1">
+              <div className="flex flex-col text-sm text-gray-700 dark:text-gray-300 space-y-1">
                 <p className="break-words">{remark.remark}</p>
-                <p className="text-blue-600">{remark.remarkby}</p>
-                <p className="text-gray-500">
+                <p className="text-blue-600 dark:text-blue-400">
+                  {remark.remarkby}
+                </p>
+                <p className="text-gray-500 dark:text-gray-400">
                   {new Date(remark.logtime).toLocaleString()}
                 </p>
               </div>
@@ -226,7 +245,7 @@ export default function LeadCard({
                       });
                       setIsEditRemarkModalOpen(true);
                     }}
-                    className="text-blue-500 hover:text-blue-600 transition"
+                    className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition"
                   >
                     <FaEdit />
                   </button>
@@ -235,8 +254,14 @@ export default function LeadCard({
                   <button
                     title="Delete Remark"
                     aria-label="Delete Remark"
-                    onClick={() => onDeleteRemark(leadData.lead_id, remark._id)}
-                    className="text-red-500 hover:text-red-600 transition"
+                    onClick={() => {
+                      setRemarkToDelete({
+                        leadId: leadData.lead_id,
+                        remarkId: remark._id,
+                      });
+                      setIsDeleteRemarkModalOpen(true);
+                    }}
+                    className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition"
                   >
                     <FaTrash />
                   </button>
@@ -246,115 +271,135 @@ export default function LeadCard({
           ))}
         </ul>
       ) : (
-        <p className="text-gray-500">No remarks available.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+          No remarks available.
+        </p>
       )}
     </div>
   );
 
   return (
     <>
-    <PageMeta
+      <PageMeta
         title="Lead Details"
         description="View and manage lead details, remarks, and follow-ups."
       />
-    <div className="border p-6 rounded-2xl shadow-lg bg-gradient-to-br from-white to-blue-50 w-full hover:shadow-xl transition-all space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center p-3 rounded-xl bg-white shadow hover:shadow-lg transition-all">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold text-blue-600 flex items-center gap-2">
-                <FaUser className="text-blue-500" />
-                {leadData.firstname} {leadData.lastname} (
-                <span
-                  className="cursor-pointer text-blue-500 hover:underline"
-                  onClick={() => {
-                    navigator.clipboard.writeText(leadData.lead_id);
-                    toast.success("Lead ID copied to clipboard!");
-                  }}
-                >
-                  {leadData.lead_id}
+      <div className="border p-6 rounded-2xl shadow-lg bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 w-full hover:shadow-xl transition-all space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center p-3 rounded-xl bg-white dark:bg-gray-900 shadow hover:shadow-lg transition-all">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                  <FaUser className="text-blue-500 dark:text-blue-400" />
+                  {leadData.firstname} {leadData.lastname} (
+                  <span
+                    className="cursor-pointer text-md text-blue-500 dark:text-blue-400 hover:underline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(leadData.lead_id);
+                      toast.success("Lead ID copied to clipboard!");
+                    }}
+                  >
+                    {leadData.lead_id}
+                  </span>
+                  )
+                </h2>
+                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                  {leadData.status || "N/A"}
                 </span>
-                )
-              </h2>
-              <span className="text-sm px-3 py-1.5 bg-green-100 text-green-800 rounded-full font-medium">
-                {leadData.status || "N/A"}
-              </span>
-              <span className="text-sm px-3 py-1.5 bg-green-100 text-green-800 rounded-full font-medium">
-                Department - {leadData.primarycategory || "N/A"}
-              </span>
-              <span className="text-sm px-3 py-1.5 bg-green-100 text-green-800 rounded-full font-medium">
-                Group - {leadData.secondarycategory || "N/A"}
-              </span>
+                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                  Department - {leadData.primarycategory || "N/A"}
+                </span>
+                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                  Group - {leadData.secondarycategory || "N/A"}
+                </span>
+              </div>
             </div>
+          </div>
+
+          <div className="flex space-x-3 mt-4 md:mt-0">
+            {user.can_edit_lead && (
+              <button
+                onClick={() => onEditLead(leadData.lead_id)}
+                className="bg-yellow-500 text-white px-1.5 py-2 rounded-lg flex items-center gap- hover:bg-yellow-600 transition"
+              >
+                <FaEdit /> Edit
+              </button>
+            )}
+            {user.can_delete_lead && (
+              <button
+                onClick={onDeleteLead}
+                className="bg-red-500 text-white px-1.5 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 transition"
+              >
+                <FaTrash /> Delete
+              </button>
+            )}
+            {user.can_add_followup && (
+              <button
+                onClick={() => setIsFollowUpModalOpen(true)}
+                className="bg-blue-500 text-white px-1.5 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
+              >
+                <FaCalendarPlus />
+                Follow Up
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="flex space-x-3 mt-4 md:mt-0">
-          {user.can_edit_lead && (
+        {/* Section Buttons */}
+        <div className="flex justify-right space-x-4">
+          {Object.values(SECTIONS).map((section) => (
             <button
-              onClick={() => onEditLead(leadData.lead_id)}
-              className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition"
+              key={section}
+              onClick={() => setActiveSection(section)}
+              className={`px-6 py-2 rounded-2xl font-semibold transition-all duration-300 ${
+                activeSection === section
+                  ? "bg-blue-500 text-white shadow-lg shadow-blue-200 dark:shadow-blue-800 scale-105"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
             >
-              <FaEdit /> Edit
+              {section.charAt(0).toUpperCase() + section.slice(1)}
             </button>
-          )}
-          {user.can_delete_lead && (
-            <button
-              onClick={() => onDeleteLead(leadData.lead_id)}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 transition"
-            >
-              <FaTrash /> Delete
-            </button>
-          )}
-          {user.can_add_followup && (
-            <button
-              onClick={() => setIsFollowUpModalOpen(true)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition"
-            >
-              <FaCalendarPlus /> Add Follow Up
-            </button>
-          )}
+          ))}
         </div>
-      </div>
 
-      {/* Section Buttons */}
-      <div className="flex justify-right space-x-4">
-        {Object.values(SECTIONS).map((section) => (
-          <button
-            key={section}
-            onClick={() => setActiveSection(section)}
-            className={`px-6 py-2 rounded-2xl font-semibold transition-all duration-300 ${
-              activeSection === section
-                ? "bg-blue-500 text-white shadow-lg shadow-blue-200 scale-105"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            {section.charAt(0).toUpperCase() + section.slice(1)}
-          </button>
-        ))}
-      </div>
+        {/* Section Content */}
+        <div className="bg-gray-50 dark:bg-gray-800 p-1 rounded-xl">
+          {activeSection === SECTIONS.DETAILS
+            ? renderDetails()
+            : renderRemarks()}
+        </div>
 
-      {/* Section Content */}
-      <div className="bg-gray-50 p-1 rounded-xl">
-        {activeSection === SECTIONS.DETAILS ? renderDetails() : renderRemarks()}
-      </div>
+        {/* Modals */}
+        {isFollowUpModalOpen && (
+          <AddFollowUp
+            isOpen={isFollowUpModalOpen}
+            onClose={() => setIsFollowUpModalOpen(false)}
+            lead_id={leadData.lead_id}
+          />
+        )}
 
-      {/* Modals */}
-      {isFollowUpModalOpen && (
-        <AddFollowUp
-          isOpen={isFollowUpModalOpen}
-          onClose={() => setIsFollowUpModalOpen(false)}
-          lead_id={leadData.lead_id}
+        <EditRemarkModal
+          isOpen={isEditRemarkModalOpen}
+          onClose={() => setIsEditRemarkModalOpen(false)}
+          onSubmit={handleSubmitEditRemark}
+          initialText={editingRemark.text}
         />
-      )}
-      <EditRemarkModal
-        isOpen={isEditRemarkModalOpen}
-        onClose={() => setIsEditRemarkModalOpen(false)}
-        onSubmit={handleSubmitEditRemark}
-        initialText={editingRemark.text}
-      />
-    </div>
+
+        {isDeleteRemarkModalOpen && (
+          <DeleteRemarkModal
+            isOpen={isDeleteRemarkModalOpen}
+            onClose={() => setIsDeleteRemarkModalOpen(false)}
+            onDelete={async () => {
+              await onDeleteRemark(
+                remarkToDelete.leadId,
+                remarkToDelete.remarkId
+              );
+              setIsDeleteRemarkModalOpen(false);
+            }}
+          />
+        )}
+      </div>
     </>
   );
 }

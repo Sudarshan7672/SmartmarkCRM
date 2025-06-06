@@ -32,84 +32,12 @@ type NavItem = {
 const loginItems: NavItem[] = [
   {
     icon: <CalenderIcon />,
-    name: "Sign In",
+    name: "Log in",
     path: "/",
   },
 ];
 
-const navItems: NavItem[] = [
-  {
-    icon: <CalenderIcon />,
-    name: "Sign In",
-    path: "/",
-  },
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/dashboard",
-    subItems: [{ name: "Analytics", path: "/dashboard", pro: false }],
-  },
-  {
-    icon: <PageIcon />,
-    name: "Lead Manager",
-    path: "/manage-leads",
-  },
-  {
-    icon: <HorizontaLDots />,
-    name: "Follow Up Manager",
-    path: "/calendar",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Raw Data Manager",
-    path: "/add-lead",
-  },
-  {
-    icon: <PieChartIcon />,
-    name: "Bulk Upload Manager",
-    path: "/bulk-upload",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Bulk Actions",
-    path: "/bulk-actions",
-  },
-  {
-    icon: <PageIcon />,
-    name: "Raise a Ticket",
-    path: "/raise-ticket",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
-];
-
-const supernavItems: NavItem[] = [
-  {
-    icon: <CalenderIcon />,
-    name: "Sign In",
-    path: "/",
-  },
+const superadminnavItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
@@ -161,30 +89,105 @@ const supernavItems: NavItem[] = [
     name: "Lead Delete Logs",
     path: "/delete-logs",
   },
-  // {
-  //   icon: <UserCircleIcon />,
-  //   name: "User Profile",
-  //   path: "/profile",
-  // },
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
-  // },
+  {
+    icon: <UserCircleIcon />,
+    name: "User Activity",
+    path: "/user-activity",
+  },
 ];
+
+const adminnavItems: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/dashboard",
+    subItems: [{ name: "Analytics", path: "/dashboard", pro: false }],
+  },
+  {
+    icon: <PageIcon />,
+    name: "Lead Manager",
+    path: "/manage-leads",
+  },
+  {
+    icon: <HorizontaLDots />,
+    name: "Follow Up Manager",
+    path: "/calendar",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Raw Data Manager",
+    path: "/add-lead",
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Bulk Upload Manager",
+    path: "/bulk-upload",
+  },
+  {
+    icon: <ListIcon />,
+    name: "Bulk Actions",
+    path: "/bulk-actions",
+  },
+  {
+    icon: <PageIcon />,
+    name: "Raise a Ticket",
+    path: "/raise-ticket",
+  },
+  {
+    icon: <CalenderIcon />,
+    name: "Lead Logs",
+    path: "/lead-logs",
+  },
+  {
+    icon: <PageIcon />,
+    name: "Lead Delete Logs",
+    path: "/delete-logs",
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "User Activity",
+    path: "/user-activity",
+  },
+];
+
+const usernavItems: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/dashboard",
+    subItems: [{ name: "Analytics", path: "/dashboard", pro: false }],
+  },
+  {
+    icon: <PageIcon />,
+    name: "Lead Manager",
+    path: "/manage-leads",
+  },
+  {
+    icon: <HorizontaLDots />,
+    name: "Follow Up Manager",
+    path: "/calendar",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Raw Data Manager",
+    path: "/add-lead",
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Bulk Upload Manager",
+    path: "/bulk-upload",
+  },
+  {
+    icon: <ListIcon />,
+    name: "Bulk Actions",
+    path: "/bulk-actions",
+  },
+  {
+    icon: <PageIcon />,
+    name: "Raise a Ticket",
+    path: "/raise-ticket",
+  },
+]
 
 const othersItems: NavItem[] = [
   {
@@ -263,7 +266,7 @@ const AppSidebar: React.FC = () => {
       const items =
         menuType === "main"
           ? isauthenticated
-            ? navItems
+            ? usernavItems
             : loginItems
           : othersItems;
 
@@ -311,6 +314,18 @@ const AppSidebar: React.FC = () => {
       return { type: menuType, index };
     });
   };
+type UserRole = "SuperAdmin" | "Admin" | "CRM Manager" | "Sales" | "Support";
+
+// Use NavItem[] directly for role-based menus
+const roleBasedMenus: Record<UserRole, NavItem[]> = {
+  SuperAdmin: superadminnavItems,
+  Admin: adminnavItems,
+  "CRM Manager": adminnavItems,
+  Sales: usernavItems,
+  Support: usernavItems,
+};
+
+
 
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
     <ul className="flex flex-col gap-4">
@@ -455,13 +470,13 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/">
+        <Link to="/dashboard">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               {/* Smartmark Company logo light mode */}
               <img
                 className="dark:hidden"
-                src="/images/logo/gbslogosidebar.jpg"
+                src="/images/logo/smartmarklogo.png"
                 alt="Logo"
                 // width={150}
                 height={40}
@@ -469,16 +484,16 @@ const AppSidebar: React.FC = () => {
               {/* Smartmark Company logo Dark mode */}
               <img
                 className="hidden dark:block"
-                src="/images/logo/gbslogosidebar.jpg"
+                src="/images/logo/smartmarklogo.png"
                 alt="Logo"
-                width={150}
+                // width={150}
                 height={40}
               />
             </>
           ) : (
             // Logo for mobile view
             <img
-              src="/images/logo/smartmarklogo.jpeg"
+              src="/images/logo/smartmarklogo.png"
               alt="Logo"
               width={32}
               height={32}
@@ -505,9 +520,7 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(
                 isauthenticated
-                  ? user.role == `SuperAdmin`
-                    ? supernavItems
-                    : navItems
+                  ? roleBasedMenus[user.role as UserRole] || navItems // fallback to default navItems if role not found
                   : loginItems,
                 "main"
               )}

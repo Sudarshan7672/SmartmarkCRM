@@ -76,7 +76,7 @@ const BulkUploadManager = () => {
   const [isloading, setIsLoading] = useState(false);
 
   const requiredColumns = [
-    "leadowneremail",
+    // "leadowneremail",
     "source",
     "firstname",
     "lastname",
@@ -84,7 +84,18 @@ const BulkUploadManager = () => {
     "contact",
   ];
 
-  const validSources = ["chatbot", "expo", "manual"];
+  const validSources = [
+  "api lead",
+  "chatbot",
+  "meta ad",
+  "ivr",
+  "expo",
+  "sales team",
+  "walk-in",
+  "referral",
+  "other"
+];
+
 
   const handleTemplateDownload = () => {
     const templateUrl = `/format.${fileType}`;
@@ -117,14 +128,14 @@ const BulkUploadManager = () => {
           (row) =>
             !row.firstname?.trim() ||
             !row.lastname?.trim() ||
-            !row.leadowneremail?.trim() ||
+            // !row.leadowneremail?.trim() ||
             !row.source?.trim() ||
             !validSources.includes(row.source.trim().toLowerCase())
         );
 
         if (invalidRows.length > 0) {
           setError(
-            "Some rows are missing required fields or have invalid source values. Valid sources are: chatbot, expo, manual."
+            "Some rows are missing required fields or have invalid source values. Valid sources are: api lead, chatbot, meta ad, ivr, expo, sales team, walk-in, referral, other."
           );
           setPreviewData([]);
           setValidData(false);
@@ -189,126 +200,128 @@ const BulkUploadManager = () => {
         title="Bulk Lead Upload"
         description="Upload multiple leads at once using a template file."
       />
-    <div className="p-6 bg-white rounded-lg shadow-xl max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-          Bulk Lead Upload
-        </h2>
-        <Stepper activeStep={step} alternativeLabel>
-          {["Info & Template", "Upload File", "Validation & Upload"].map(
-            (label, index) => (
-              <Step key={index}>
-                <StepLabel StepIconComponent={CustomStepIcon}>
-                  <span className="text-sm text-gray-700">{label}</span>
-                </StepLabel>
-              </Step>
-            )
-          )}
-        </Stepper>
+    <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl mx-auto">
+  <div className="mb-6">
+    <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+      Bulk Lead Upload
+    </h2>
+    <Stepper activeStep={step} alternativeLabel>
+      {["Info & Template", "Upload File", "Validation & Upload"].map((label, index) => (
+        <Step key={index}>
+          <StepLabel StepIconComponent={CustomStepIcon}>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+          </StepLabel>
+        </Step>
+      ))}
+    </Stepper>
+  </div>
+
+  {step === 0 && (
+    <div className="text-gray-700 dark:text-gray-200">
+      <p className="mb-4">
+        Download a dummy template with required fields (e.g., Name, Contact).
+      </p>
+      <div className="flex items-center gap-3">
+        <select
+          value={fileType}
+          onChange={(e) => setFileType(e.target.value)}
+          className="border dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-2 rounded"
+        >
+          <option value="xlsx">Excel</option>
+          <option value="csv">CSV</option>
+        </select>
+        <button
+          onClick={handleTemplateDownload}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Download Template
+        </button>
+        <button
+          onClick={() => setStep(1)}
+          disabled={!user.can_add_bulk_lead}
+          className={`bg-gray-500 text-white px-4 py-2 rounded ${
+            user.can_add_bulk_lead ? "active hover:bg-gray-600" : "opacity-50 cursor-not-allowed"
+          } ml-auto`}
+        >
+          Next
+        </button>
       </div>
-
-      {step === 0 && (
-        <div className="text-gray-700">
-          <p className="mb-4">
-            Download a dummy template with required fields (e.g., Name, Email,
-            Contact).
-          </p>
-          <div className="flex items-center gap-3">
-            <select
-              value={fileType}
-              onChange={(e) => setFileType(e.target.value)}
-              className="border px-3 py-2 rounded"
-            >
-              <option value="xlsx">Excel</option>
-              <option value="csv">CSV</option>
-            </select>
-            <button
-              onClick={handleTemplateDownload}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Download Template
-            </button>
-            <button
-              onClick={() => setStep(1)}
-              disabled={!user.can_add_bulk_lead}
-              className={`bg-gray-500 text-white px-4 py-2 rounded ${
-                user.can_add_bulk_lead
-                  ? "active"
-                  : "opacity-50 cursor-not-allowed"
-              } hover:bg-gray-600 ml-auto`}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === 1 && (
-        <div className="text-gray-700">
-          <label className="block mb-2">Upload your filled template:</label>
-          <input
-            type="file"
-            onChange={handleFileChange}
-            accept=".xlsx,.xls,.csv"
-            className="mb-4 border p-2 rounded w-full"
-          />
-          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
-          <button
-            onClick={() => setStep(0)}
-            className="mr-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-          >
-            Back
-          </button>
-        </div>
-      )}
-
-      {step === 2 && previewData.length > 0 && (
-        <div className="text-gray-700">
-          <h3 className="font-bold mb-3 text-lg">Data Preview</h3>
-          <div className="overflow-auto border rounded-lg max-h-[300px]">
-            <table className="table-auto w-full">
-              <thead>
-                <tr className="bg-gray-100">
-                  {Object.keys(previewData[0]).map((key, idx) => (
-                    <th
-                      key={idx}
-                      className="border px-3 py-2 text-left text-sm text-gray-700"
-                    >
-                      {key}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {previewData.map((row, idx) => (
-                  <tr key={idx} className="odd:bg-white even:bg-gray-50">
-                    {Object.values(row).map((val, i) => (
-                      <td key={i} className="border px-3 py-1 text-sm">
-                        {val}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => setStep(1)}
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-            >
-              Back
-            </button>
-            <button
-              onClick={handleUpload}
-              className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700"
-            >
-              {isloading ? "Uploading..." : "Confirm & Upload"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
+  )}
+
+  {step === 1 && (
+    <div className="text-gray-700 dark:text-gray-200">
+      <label className="block mb-2">Upload your filled template:</label>
+      <input
+        type="file"
+        onChange={handleFileChange}
+        accept=".xlsx,.xls,.csv"
+        className="mb-4 border dark:border-gray-600 p-2 rounded w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+      />
+      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+      <button
+        onClick={() => setStep(0)}
+        className="mr-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+      >
+        Back
+      </button>
+    </div>
+  )}
+
+  {step === 2 && previewData.length > 0 && (
+    <div className="text-gray-700 dark:text-gray-200">
+      <h3 className="font-bold mb-3 text-lg">Data Preview</h3>
+      <div className="overflow-auto border dark:border-gray-700 rounded-lg max-h-[300px]">
+        <table className="table-auto w-full">
+          <thead>
+            <tr className="bg-gray-100 dark:bg-gray-800">
+              {Object.keys(previewData[0]).map((key, idx) => (
+                <th
+                  key={idx}
+                  className="border dark:border-gray-700 px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300"
+                >
+                  {key}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {previewData.map((row, idx) => (
+              <tr
+                key={idx}
+                className="odd:bg-white even:bg-gray-50 dark:odd:bg-gray-900 dark:even:bg-gray-800"
+              >
+                {Object.values(row).map((val, i) => (
+                  <td
+                    key={i}
+                    className="border dark:border-gray-700 px-3 py-1 text-sm text-gray-800 dark:text-gray-200"
+                  >
+                    {val}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-4 flex gap-2">
+        <button
+          onClick={() => setStep(1)}
+          className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+        >
+          Back
+        </button>
+        <button
+          onClick={handleUpload}
+          className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700"
+        >
+          {isloading ? "Uploading..." : "Confirm & Upload"}
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+
     </>
   );
 };

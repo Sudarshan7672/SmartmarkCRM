@@ -18,6 +18,7 @@ export default function SignInForm() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [user, setUser] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     axios
@@ -38,6 +39,7 @@ export default function SignInForm() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -49,6 +51,7 @@ export default function SignInForm() {
 
       if (res.status === 200) {
         setIsLoggedIn(true);
+        setIsLoading(false);
         navigate("/dashboard"); // Redirect to the dashboard or home page
         setUsername("");
         setPassword("");
@@ -115,11 +118,11 @@ export default function SignInForm() {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-              {isLoggedIn ? "Welcome Back!" : "Sign In"}
+              {isLoggedIn ? "Welcome Back!" : "Log In"}
             </h1>
             {!isLoggedIn && (
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Enter your username and password to sign in!
+                Enter your username and password to Log in !
               </p>
             )}
           </div>
@@ -177,14 +180,14 @@ export default function SignInForm() {
 
                 <div>
                   <Button className="w-full" size="sm" type="submit">
-                    Sign in
+                    Log in
                   </Button>
                 </div>
               </div>
             </form>
           ) : (
-            <div className="text-center">
-              <p className="mb-4 text-gray-700 dark:text-gray-300">
+            <div className="">
+              <p className="mb-4 pl-2 text-gray-700 dark:text-gray-300">
                 You are logged in as <strong>{user.fullname}</strong>
               </p>
               <Button className="w-full" size="sm" onClick={handleLogout}>

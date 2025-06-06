@@ -41,13 +41,13 @@ const AddFollowUpModal = ({ isOpen, onClose, lead_id }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-50 z-20">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-opacity-50 z-20 ">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96 dark:bg-gray-900 dark:text-white">
         <h2 className="text-xl font-semibold mb-4">Add Follow-Up</h2>
         <form onSubmit={handleSubmit}>
           {/* Title */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Title (Required)</label>
+          <div className="mb-4 ">
+            <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-white">Title (Required)</label>
             <input
               type="text"
               value={title}
@@ -59,7 +59,7 @@ const AddFollowUpModal = ({ isOpen, onClose, lead_id }) => {
 
           {/* Follow-Up Date (Date Picker) */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Follow-Up Date (Required)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-white">Follow-Up Date (Required)</label>
             <DatePicker
               selected={followUpDate}
               onChange={(date) => setFollowUpDate(date)}
@@ -73,7 +73,7 @@ const AddFollowUpModal = ({ isOpen, onClose, lead_id }) => {
 
           {/* Status Dropdown */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Status</label>
+            <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-white">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -87,7 +87,7 @@ const AddFollowUpModal = ({ isOpen, onClose, lead_id }) => {
 
           {/* Notes */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Notes</label>
+            <label className="block text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-white">Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

@@ -130,117 +130,121 @@ export default function SuperAdminUserManager() {
         description="Manage users, roles, and permissions"
       />
     <div className="p-4 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">
-        {editMode ? "Edit User" : "Add New User"}
-      </h2>
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-6"
+  <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+    {editMode ? "Edit User" : "Add New User"}
+  </h2>
+
+  <form
+    onSubmit={handleSubmit}
+    className="bg-white dark:bg-gray-900 shadow-md rounded px-8 pt-6 pb-8 mb-6"
+  >
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <input
+        type="text"
+        name="username"
+        placeholder="Username"
+        className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        value={form.username}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="text"
+        name="fullname"
+        placeholder="Full Name"
+        className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        value={form.fullname}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        value={form.password}
+        onChange={handleChange}
+        required={!editMode}
+      />
+      <select
+        name="role"
+        value={form.role}
+        onChange={handleChange}
+        className="border border-gray-300 dark:border-gray-600 p-2 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+        required
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            className="border p-2"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="fullname"
-            placeholder="Full Name"
-            className="border p-2"
-            value={form.fullname}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="border p-2"
-            value={form.password}
-            onChange={handleChange}
-            required={!editMode}
-          />
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="border p-2"
-            required
-          >
-            <option value="SuperAdmin">SuperAdmin</option>
-            <option value="Admin">Admin</option>
-            <option value="CRM Manager">CRM Manager</option>
-            <option value="Sales">Sales</option>
-            <option value="Support">Support</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-4">
-          {permissionFields.map((perm) => (
-            <label key={perm} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name={perm}
-                checked={form[perm]}
-                onChange={handleChange}
-              />
-              <span>{perm.replaceAll("_", " ")}</span>
-            </label>
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {editMode ? "Update User" : "Create User"}
-        </button>
-      </form>
-
-      <h2 className="text-lg font-semibold mb-2">Existing Users</h2>
-      <div className="overflow-auto max-h-[400px] border rounded">
-        <table className="min-w-full table-auto text-sm text-left">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="px-2 py-1">Username</th>
-              <th className="px-2 py-1">Full Name</th>
-              <th className="px-2 py-1">Role</th>
-              <th className="px-2 py-1">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u._id} className="border-t">
-                <td className="px-2 py-1">{u.username}</td>
-                <td className="px-2 py-1">{u.fullname}</td>
-                <td className="px-2 py-1">{u.role}</td>
-                <td className="px-2 py-1 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(u)}
-                    className="text-blue-600"
-                  >
-                    Edit
-                  </button>
-                  {u.role !== "SuperAdmin" && (
-                    <button
-                    onClick={() => handleDelete(u._id)}
-                    className="text-red-600"
-                  >
-                    Delete
-                  </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        <option value="SuperAdmin">SuperAdmin</option>
+        <option value="Admin">Admin</option>
+        <option value="CRM Manager">CRM Manager</option>
+        <option value="Sales">Sales</option>
+        <option value="Support">Support</option>
+      </select>
     </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-4">
+      {permissionFields.map((perm) => (
+        <label key={perm} className="flex items-center space-x-2 text-gray-700 dark:text-gray-200">
+          <input
+            type="checkbox"
+            name={perm}
+            checked={form[perm]}
+            onChange={handleChange}
+          />
+          <span>{perm.replaceAll("_", " ")}</span>
+        </label>
+      ))}
+    </div>
+
+    <button
+      type="submit"
+      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+    >
+      {editMode ? "Update User" : "Create User"}
+    </button>
+  </form>
+
+  <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-100">
+    Existing Users
+  </h2>
+  <div className="overflow-auto max-h-[400px] border border-gray-200 dark:border-gray-700 rounded">
+    <table className="min-w-full table-auto text-sm text-left text-gray-800 dark:text-gray-100">
+      <thead className="bg-gray-200 dark:bg-gray-800">
+        <tr>
+          <th className="px-2 py-1">Username</th>
+          <th className="px-2 py-1">Full Name</th>
+          <th className="px-2 py-1">Role</th>
+          <th className="px-2 py-1">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {users.map((u) => (
+          <tr key={u._id} className="border-t border-gray-200 dark:border-gray-700">
+            <td className="px-2 py-1">{u.username}</td>
+            <td className="px-2 py-1">{u.fullname}</td>
+            <td className="px-2 py-1">{u.role}</td>
+            <td className="px-2 py-1 flex gap-2">
+              <button
+                onClick={() => handleEdit(u)}
+                className="text-blue-600 dark:text-blue-400"
+              >
+                Edit
+              </button>
+              {u.role !== "SuperAdmin" && (
+                <button
+                  onClick={() => handleDelete(u._id)}
+                  className="text-red-600 dark:text-red-400"
+                >
+                  Delete
+                </button>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
     </>
   );
 }

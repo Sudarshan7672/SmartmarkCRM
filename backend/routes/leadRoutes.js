@@ -13,7 +13,7 @@ const { logLeadTransfer } = require("../services/transferLogsService");
 router.post("/add", async (req, res) => {
   try {
     const {
-      leadowneremail,
+      leadowner,
       source,
       firstname,
       lastname,
@@ -23,7 +23,8 @@ router.post("/add", async (req, res) => {
       designation,
       company,
       address,
-      Zone,
+      territory,
+      state,
       country,
       requirements,
       status,
@@ -43,7 +44,7 @@ router.post("/add", async (req, res) => {
 
     // Validate required fields
     if (
-      !leadowneremail ||
+      !leadowner ||
       !firstname ||
       !lastname ||
       !email ||
@@ -90,7 +91,7 @@ router.post("/add", async (req, res) => {
     // Create new lead
     const newLead = new Lead({
       lead_id,
-      leadowneremail,
+      leadowner,
       source,
       firstname,
       lastname,
@@ -100,7 +101,8 @@ router.post("/add", async (req, res) => {
       designation,
       company,
       address,
-      Zone,
+      territory,
+      state,
       country,
       requirements,
       status: status || "New",
@@ -137,7 +139,8 @@ router.post("/add", async (req, res) => {
 router.put("/update", isAuthenticated, async (req, res) => {
   console.log("Updating lead with ID:", req.body._id);
   try {
-    const { _id, ...updateData } = req.body;
+    const { _id, ...updated_data } = req.body;
+    console.log("Updated data:", updated_data);
     const role = req.user?.role;
     const user = req.user;
 
@@ -155,16 +158,21 @@ router.put("/update", isAuthenticated, async (req, res) => {
     const updatedFields = [];
     const changes = [];
 
-    for (const key in updateData) {
-      if (updateData.hasOwnProperty(key)) {
+    for (const key in updated_data) {
+      if (updated_data.hasOwnProperty(key)) {
         // For arrays or objects, you might want to do a JSON string compare (simplest deep compare)
         const oldVal = existingLead[key];
-        const newVal = updateData[key];
+        const newVal = updated_data[key];
         let changed = false;
 
         if (Array.isArray(oldVal) && Array.isArray(newVal)) {
           changed = JSON.stringify(oldVal) !== JSON.stringify(newVal);
-        } else if (typeof oldVal === "object" && oldVal !== null && typeof newVal === "object" && newVal !== null) {
+        } else if (
+          typeof oldVal === "object" &&
+          oldVal !== null &&
+          typeof newVal === "object" &&
+          newVal !== null
+        ) {
           changed = JSON.stringify(oldVal) !== JSON.stringify(newVal);
         } else {
           changed = oldVal !== newVal;
@@ -183,7 +191,7 @@ router.put("/update", isAuthenticated, async (req, res) => {
 
     // Now update the lead document's fields manually, for better control
     for (const field of updatedFields) {
-      existingLead[field] = updateData[field];
+      existingLead[field] = updated_data[field];
     }
 
     // 🔁 Transfer log logic (unchanged, just minor fix)
@@ -195,8 +203,8 @@ router.put("/update", isAuthenticated, async (req, res) => {
     const isSameRole = oldPrimaryNormalized === roleNormalized;
     const isTransferred =
       oldPrimary &&
-      updateData.hasOwnProperty("primarycategory") &&
-      updateData.primarycategory !== oldPrimary;
+      updated_data.hasOwnProperty("primarycategory") &&
+      updated_data.primarycategory !== oldPrimary;
 
     if (isTransferred && isSameRole) {
       await logLeadTransfer(existingLead.lead_id, {
@@ -206,11 +214,11 @@ router.put("/update", isAuthenticated, async (req, res) => {
           secondarycategory: oldSecondary,
         },
         transferredto: {
-          author: updateData.primarycategory || "unknown",
-          primarycategory: updateData.primarycategory,
-          secondarycategory: updateData.secondarycategory || "",
+          author: updated_data.primarycategory || "unknown",
+          primarycategory: updated_data.primarycategory,
+          secondarycategory: updated_data.secondarycategory || "",
         },
-        remark: updateData.remark || "",
+        remark: updated_data.remark || "",
       });
     }
 
@@ -253,70 +261,202 @@ router.put("/update", isAuthenticated, async (req, res) => {
   }
 });
 
-
 router.get("/get-leads", async (req, res) => {
   try {
-    const { status } = req.query;
-    // console.log("Fetching leads with status:", status);
-    // console.log(status);
-    // console.log("User Role:", req.user?.role);
+    const { status, filters, page = 1, limit = 20 } = req.query;
 
-    // Use req.user for the logged-in user
+    // Parse filters safely
+    let parsedFilters = {};
+    if (filters) {
+      try {
+        parsedFilters = JSON.parse(filters);
+        console.log("Parsed filters:", parsedFilters);
+      } catch (err) {
+        console.warn("Invalid filters JSON, ignoring filters");
+      }
+    }
+
     const user = req.user;
-
-    // Define the role-based filter
     let roleFilter = {};
-    // console.log("User Role:", user?.role);
-    if (user?.role === "Sales") {
-      roleFilter = { primarycategory: "sales" };
-    } else if (user?.role === "Support") {
-      roleFilter = { primarycategory: "support" };
+    if (user?.role === "Support") {
+      roleFilter.primarycategory = "support";
+      if (user?.fullname === "Aakansha Rathod") {
+        roleFilter.secondarycategory = { $in: ["group 5", "group 6"] };
+        roleFilter.leadowner = { $in: ["Aakansha Rathod"] };
+      }
+    } else if (user?.role === "Sales") {
+      roleFilter.primarycategory = "sales";
+      if (user?.fullname === "Prathamesh Mane") {
+        roleFilter.secondarycategory = { $in: ["group 2"] };
+        roleFilter.leadowner = { $in: ["Prathamesh Mane"] };
+      }
+      if (user?.fullname === "Bharat Kokatnur") {
+        roleFilter.secondarycategory = { $in: ["group 4"] };
+        roleFilter.leadowner = { $in: ["Bharat Kokatnur"] };
+      }
+    } else if (["CRM Manager", "Admin", "SuperAdmin"].includes(user?.role)) {
+      roleFilter.primarycategory = { $in: ["", "sales", "support"] };
     }
 
     // Status filter
     let statusFilter = {};
     if (status && status !== "All") {
       if (status === "Re-enquired") {
-        statusFilter = { re_enquired: true };
+        statusFilter.re_enquired = true;
       } else {
-        statusFilter = { status };
+        statusFilter.status = status;
       }
     }
 
-    // Combine filters
+    // Build main query
     const query = { ...roleFilter, ...statusFilter };
-    console.log("MongoDB query:", query);
 
-
-    // Fetch leads
-    const leads = await Lead.find(query);
-    // console.log("Leads fetched:", leads);
-
-    // Also compute counts for each status (based on role filter only)
-    const statuses = [
-      "New",
-      "Not-Connected",
-      "Hot",
-      "Cold",
-      "Re-enquired",
-      "Follow-up",
-      "Converted",
-      "Transferred-to-Dealer",
-    ];
-
-    const statusCounts = {};
-    for (const s of statuses) {
-      let countFilter = { ...roleFilter };
-      if (s === "Re-enquired") {
-        countFilter.re_enquired = true;
-      } else {
-        countFilter.status = s;
-      }
-
-      statusCounts[s] = await Lead.countDocuments(countFilter);
+    // Additional filters
+    if (parsedFilters.primarycategory?.trim()) {
+      query.primarycategory = parsedFilters.primarycategory.trim();
+    }
+    if (parsedFilters.secondarycategory?.trim()) {
+      query.secondarycategory = parsedFilters.secondarycategory.trim();
+    }
+    if (parsedFilters.leadowner?.trim()) {
+      query.leadowner = parsedFilters.leadowner.trim();
+    }
+    if (parsedFilters.source?.trim()) {
+      query.source = parsedFilters.source.trim();
     }
 
-    res.json({ leads, statusCounts });
+    if (parsedFilters.untouchedLeads === true) {
+      query.$expr = {
+        $lte: [{ $abs: { $subtract: ["$created_at", "$updated_at"] } }, 10000],
+      };
+    }
+
+    // Date filters
+    if (parsedFilters.createdDateFrom?.trim()) {
+      query.created_at = query.created_at || {};
+      query.created_at.$gte = new Date(parsedFilters.createdDateFrom);
+    }
+    if (parsedFilters.createdDateTo?.trim()) {
+      query.created_at = query.created_at || {};
+      const toDate = new Date(parsedFilters.createdDateTo);
+      toDate.setHours(23, 59, 59, 999);
+      query.created_at.$lte = toDate;
+    }
+    if (parsedFilters.updatedDateFrom?.trim()) {
+      query.updated_at = query.updated_at || {};
+      query.updated_at.$gte = new Date(parsedFilters.updatedDateFrom);
+    }
+    if (parsedFilters.updatedDateTo?.trim()) {
+      query.updated_at = query.updated_at || {};
+      const toDate = new Date(parsedFilters.updatedDateTo);
+      toDate.setHours(23, 59, 59, 999);
+      query.updated_at.$lte = toDate;
+    }
+    if (parsedFilters.reenquiredDateFrom || parsedFilters.reenquiredDateTo) {
+      query.created_at = query.created_at || {};
+      if (parsedFilters.reenquiredDateFrom?.trim()) {
+        query.created_at.$gte = new Date(parsedFilters.reenquiredDateFrom);
+      }
+      if (parsedFilters.reenquiredDateTo?.trim()) {
+        const toDate = new Date(parsedFilters.reenquiredDateTo);
+        toDate.setHours(23, 59, 59, 999);
+        query.created_at.$lte = toDate;
+      }
+      query.re_enquired = true;
+    }
+
+    // Lead age filters (created_at days ago)
+    if (parsedFilters.leadAgeFrom !== "" && !isNaN(parsedFilters.leadAgeFrom)) {
+      const dateLimit = new Date();
+      dateLimit.setDate(
+        dateLimit.getDate() - Number(parsedFilters.leadAgeFrom)
+      );
+      query.created_at = query.created_at || {};
+      query.created_at.$lte = dateLimit;
+    }
+    if (parsedFilters.leadAgeTo !== "" && !isNaN(parsedFilters.leadAgeTo)) {
+      const dateLimit = new Date();
+      dateLimit.setDate(dateLimit.getDate() - Number(parsedFilters.leadAgeTo));
+      query.created_at = query.created_at || {};
+      query.created_at.$gte = dateLimit;
+    }
+
+    // recentCount filters — these are used later for slicing, but also applied to query here for initial fetch
+    // if (
+    //   parsedFilters.recentCountFrom !== "" &&
+    //   !isNaN(parsedFilters.recentCountFrom)
+    // ) {
+    //   const fromDate = new Date();
+    //   fromDate.setDate(fromDate.getDate() - Number(parsedFilters.recentCountFrom));
+    // }
+    // if (
+    //   parsedFilters.recentCountTo !== "" &&
+    //   !isNaN(parsedFilters.recentCountTo)
+    // ) {
+    //   const toDate = new Date();
+    //   toDate.setDate(toDate.getDate() - Number(parsedFilters.recentCountTo));
+    // }
+
+    console.log("Final query:", query);
+
+    // Pagination params
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Fetch all filtered leads from DB (no pagination)
+    let allLeads = await Lead.find(query).sort({ created_at: -1 }).exec();
+
+    // Parse recentCount slicing params
+    const from = Number(parsedFilters.recentCountFrom) || 0;
+    const to = Number(parsedFilters.recentCountTo);
+    // If recentCountTo not provided or invalid, set to length of allLeads to slice till end
+    const sliceTo = !isNaN(to) ? to : allLeads.length;
+
+    // Slice leads based on recentCount range if any filter exists
+    let slicedLeads =
+      parsedFilters.recentCountFrom !== "" || parsedFilters.recentCountTo !== ""
+        ? allLeads.slice(from, sliceTo)
+        : allLeads;
+
+    // Compute status counts on slicedLeads if slicing applied, else on allLeads
+    const leadsForStatusCount = slicedLeads;
+
+    const statusCounts = {
+      New: 0,
+      "Not-Connected": 0,
+      Hot: 0,
+      Cold: 0,
+      "Re-enquired": 0,
+      "Follow-up": 0,
+      Converted: 0,
+      "Transferred-to-Dealer": 0,
+    };
+
+    for (const lead of leadsForStatusCount) {
+      const statusKey = lead.re_enquired
+        ? "Re-enquired"
+        : lead.status || "Unknown";
+      if (statusCounts.hasOwnProperty(statusKey)) {
+        statusCounts[statusKey]++;
+      }
+    }
+
+    // Paginate sliced leads
+    const paginatedLeads = slicedLeads.slice(skip, skip + limitNum);
+
+    // Final total count and total pages based on sliced leads
+    const totalCount = slicedLeads.length;
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    console.log("Leads after slicing + pagination:", paginatedLeads.length);
+
+    res.json({
+      leads: paginatedLeads,
+      statusCounts,
+      totalCount,
+      totalPages,
+    });
   } catch (error) {
     console.error("Error fetching leads:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -339,7 +479,10 @@ router.get("/search-leads", async (req, res) => {
     // Basic search conditions
     const baseConditions = {
       $or: [
-        { lead_name: regex },
+        { firstname: regex },
+        { lastname: regex },
+        { source: regex },
+        { company: regex },
         { email: regex },
         { contact: regex },
         { lead_id: regex },
@@ -362,8 +505,8 @@ router.get("/search-leads", async (req, res) => {
   }
 });
 
-// GET /api/v1/leads/:id
-router.get("/id/:id", async (req, res) => {
+// GET /api/v1/leads/followups/:id
+router.get("/followups/:id", async (req, res) => {
   console.log("Fetching lead with ID:", req.params.id);
   console.log("Lafda");
   try {

@@ -28,6 +28,7 @@ import SuperAdminUserManager from "./pages/SuperAdmin/SuperAdminUserManager.jsx"
 import SearchLeads from "./pages/LeadManager/SearchLeads.jsx";
 import DeleteLogs from "./pages/OtherPage/DeleteLogs.jsx";
 import LeadLogs from "./pages/OtherPage/LeadLogs.jsx";
+import UserActivityList from "./pages/OtherPage/UserActivityList.jsx";
 
 export default function App() {
   return (
@@ -49,6 +50,9 @@ export default function App() {
             {/* logs route */}
             <Route path="/lead-logs" element={<LeadLogs />} />
             <Route path="/delete-logs" element={<DeleteLogs />} />
+            {/* user-activity */}
+            <Route path="/user-activity" element={<UserActivityList />} />
+            {/* Raise Ticket */}  
             <Route path='/raise-ticket' element={<RaiseTicket />} />
 
            {/* SuperAdmin */}

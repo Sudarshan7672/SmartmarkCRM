@@ -21,6 +21,7 @@ router.post("/add", async (req, res) => {
     // Create and save the new follow-up
     const newFollowUp = new FollowUp({
       leadId: lead._id,
+      addedBy: req.user?.fullname || "N/A", // Assuming req.user is set by authentication middleware
       title,
       followUpDate,
       status: status || "Pending",
@@ -63,13 +64,20 @@ router.post("/add", async (req, res) => {
 // ✅ Fetch All Follow-Ups
 router.get("/", async (req, res) => {
   try {
-    const followUps = await FollowUp.find().populate("leadId", "lead_id name email");
+    const fullname = req.user?.fullname;
+    if (!fullname) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    const followUps = await FollowUp.find({ addedBy: fullname }).populate("leadId", "lead_id name email");
+
     res.status(200).json(followUps);
   } catch (error) {
     console.error("Error fetching follow-ups:", error);
     res.status(500).json({ message: "Failed to retrieve follow-ups." });
   }
 });
+
 
 // ✅ Fetch Follow-Ups by Lead ID
 router.get("/lead/:lead_id", async (req, res) => {

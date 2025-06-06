@@ -1,15 +1,14 @@
 const { default: mongoose } = require("mongoose");
-const { Schema } = mongoose;  // <-- add this line
-
+const { Schema } = mongoose; // <-- add this line
 
 const leadSchema = new mongoose.Schema({
   lead_id: {
     type: String,
     required: true,
   },
-  leadowneremail: {
+  leadowner: {
     type: String,
-    required: true,
+    required: false,
   },
   source: {
     type: String,
@@ -25,11 +24,11 @@ const leadSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: false,
   },
   contact: {
     type: String, // Ensure it's stored as a string
-    required: true,
+    required: false,
   },
   whatsapp: {
     type: String,
@@ -51,7 +50,12 @@ const leadSchema = new mongoose.Schema({
     required: false,
     default: "",
   },
-  Zone: {
+  territory: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  state: {
     type: String,
     required: false,
     default: "",
@@ -138,15 +142,15 @@ const leadSchema = new mongoose.Schema({
           {
             field: { type: String },
             oldValue: { type: Schema.Types.Mixed },
-            newValue: { type: Schema.Types.Mixed }
-          }
+            newValue: { type: Schema.Types.Mixed },
+          },
         ],
         logtime: { type: Date, default: Date.now },
       },
     ],
     default: [],
   },
-  
+
   transferredtologs: [
     {
       transferredto: {
@@ -161,7 +165,7 @@ const leadSchema = new mongoose.Schema({
       },
       remark: String,
       logtime: Date,
-    }
+    },
   ],
   notification_logs: {
     type: [
@@ -192,6 +196,20 @@ const leadSchema = new mongoose.Schema({
   },
 });
 
+// index for lead_id to ensure uniqueness
+leadSchema.index({ lead_id: 1 }, { unique: true });
+leadSchema.index({ leadowner: 1 });
+leadSchema.index({ email: 1 });
+leadSchema.index({ contact: 1 });
+leadSchema.index({ territory: 1 });
+leadSchema.index({ country: 1 });
+
+leadSchema.index({ status: 1 });
+leadSchema.index({ primarycategory: 1, secondarycategory: 1 });
+leadSchema.index({ source: 1 });
+leadSchema.index({ created_at: -1 });
+leadSchema.index({ updated_at: -1 });
+
 // Auto-update `updated_at` field before saving
 leadSchema.pre("save", function (next) {
   this.updated_at = new Date();
@@ -199,10 +217,9 @@ leadSchema.pre("save", function (next) {
 });
 
 leadSchema.pre("findOneAndUpdate", function (next) {
-    this.set({ updated_at: new Date() });
-    next();
-  });
-  
+  this.set({ updated_at: new Date() });
+  next();
+});
 
 // Delete follow-ups when a lead is deleted
 leadSchema.pre("findOneAndDelete", async function (next) {
@@ -223,6 +240,5 @@ leadSchema.pre("findOneAndDelete", async function (next) {
   next();
 });
 
-
-module.exports = mongoose.models.Lead || mongoose.model("Lead", leadSchema, "leads");
-
+module.exports =
+  mongoose.models.Lead || mongoose.model("Lead", leadSchema, "leads");

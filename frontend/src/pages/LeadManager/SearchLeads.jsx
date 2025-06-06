@@ -6,6 +6,8 @@ import LeadUpdate from "../../components/Modals/LeadUpdate";
 import AddRemarkModal from "../../components/Modals/AddRemarkModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import  PageMeta  from "../../components/common/PageMeta";
+import { set } from "lodash";
+import Loading from "../../components/common/Loading";
 
 const SearchLeads = () => {
   const location = useLocation();
@@ -25,6 +27,7 @@ const SearchLeads = () => {
   const [isRemarkModalOpen, setIsRemarkModalOpen] = useState(false);
   const [currentLeadId, setCurrentLeadId] = useState(null);
   const [isEditRemarkModalOpen, setIsEditRemarkModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [editingRemark, setEditingRemark] = useState({
     lead_id: null,
     remark_id: null,
@@ -45,6 +48,7 @@ const SearchLeads = () => {
   }, [navigate]);
 
   const fetchLeads = useCallback(async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get(`${BACKEND_URL}/leads/get-leads`, {
         params: status !== "All" ? { status } : {},
@@ -54,6 +58,7 @@ const SearchLeads = () => {
       const { leads, statusCounts } = response.data;
       setLeads(Array.isArray(leads) ? leads.reverse() : []);
       setStatusCounts(statusCounts || {});
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching leads:", error);
       setLeads([]);
@@ -69,12 +74,14 @@ const SearchLeads = () => {
     if (!query.trim()) return;
 
     const fetchResults = async () => {
+      setIsLoading(true);
       try {
         const res = await axios.get(`${BACKEND_URL}/leads/search-leads`, {
           params: { query },
           withCredentials: true,
         });
         setResults(res.data || []);
+        setIsLoading(false);
       } catch (err) {
         console.error("Search error:", err.message);
       }
@@ -85,12 +92,13 @@ const SearchLeads = () => {
 
   const handleDeleteLead = async (leadId) => {
     if (!window.confirm("Are you sure you want to delete this lead?")) return;
-
+    setIsLoading(true);
     try {
       await axios.delete(`${BACKEND_URL}/leads/delete/${leadId}`,{
         withCredentials: true,
       });
       setLeads((prev) => prev.filter((lead) => lead.lead_id !== leadId));
+      setIsLoading(false);
     } catch (error) {
       console.error("Error deleting lead:", error);
     }
@@ -103,6 +111,7 @@ const SearchLeads = () => {
   };
 
   const handleUpdateLead = async (updatedLead) => {
+    setIsLoading(true);
     try {
       await axios.put(
         `${BACKEND_URL}/leads/update/${updatedLead.lead_id}`,
@@ -115,6 +124,7 @@ const SearchLeads = () => {
         )
       );
       setIsModalOpen(false);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error updating lead:", error);
     }
@@ -200,7 +210,9 @@ const SearchLeads = () => {
               />
             ))
           ) : (
-            <p className="text-gray-500 text-center">No results found.</p>
+            <p className="text-center text-gray-500">
+              {isLoading ? <Loading /> : "No results found."}
+            </p>
           )}
         </div>
       </div>

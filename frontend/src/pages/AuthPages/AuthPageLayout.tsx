@@ -9,7 +9,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
+    <div className="relative p-6 bg-white z-1 dark:bg-gray-900 h-[700px] overflow-hidden  sm:p-0">
       <div className="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900 sm:p-0">
         {children}
         <div className="items-center hidden w-full h-full lg:w-1/2 bg-brand-950 dark:bg-white/5 lg:grid">
@@ -20,13 +20,13 @@ export default function AuthLayout({
               <Link to="/" className="block mb-4">
                 <img
                   // width={231}
-                  // height={48}
-                  src="/images/logo/gbslogologinpage.png"
+                  height={100}
+                  src="/images/logo/smartmarklogo.png"
                   alt="Logo"
                 />
               </Link>
               <p className="text-center text-gray-400 dark:text-white/60">
-                Guru Branding Services
+                Developed by Guru Branding Services
               </p>
             </div>
           </div>

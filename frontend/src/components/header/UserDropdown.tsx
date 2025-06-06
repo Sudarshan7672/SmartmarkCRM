@@ -176,7 +176,7 @@ export default function UserDropdown({ user }: { user: User }) {
               fill=""
             />
           </svg>
-          Sign out
+          Log out
         </Link>
       </Dropdown>
     </div>

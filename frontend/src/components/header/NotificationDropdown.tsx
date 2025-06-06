@@ -33,7 +33,7 @@ export default function NotificationDropdown() {
         });
 
         const data = res.data.notifications || [];
-        console.log("Fetched notifications:", data);
+        // console.log("Fetched notifications:", data);
 
         if (data.length > 0 && data[0]._id !== lastNotificationId.current) {
           setNotifying(true);
@@ -104,7 +104,7 @@ export default function NotificationDropdown() {
           </span>
         )}
         <svg
-          className="fill-current text-gray-700 hover:text-blue-500 transition-colors duration-200"
+          className="fill-current text-red-500 hover:text-red-600 transition-colors duration-200"
           width="20"
           height="20"
           viewBox="0 0 24 24"
@@ -138,7 +138,9 @@ export default function NotificationDropdown() {
 
         <div className="overflow-y-auto max-h-[400px] space-y-4 pr-1">
           {notifications.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center">No notifications</p>
+            <p className="text-gray-500 text-sm text-center">
+              No notifications
+            </p>
           ) : (
             Object.entries(groupedNotifications).map(([date, notifs]) => (
               <div key={date}>
@@ -151,7 +153,9 @@ export default function NotificationDropdown() {
                       key={notif._id}
                       className="flex flex-col p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                     >
-                      <p className="text-sm text-gray-800 dark:text-white">{notif.msg}</p>
+                      <p className="text-sm text-gray-800 dark:text-white">
+                        {notif.msg}
+                      </p>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {dayjs(notif.timestamp).format("hh:mm A")}
                       </div>

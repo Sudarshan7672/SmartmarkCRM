@@ -1,113 +1,164 @@
-// File: controllers/reportController.js
-
-const Lead = require("../models/lead");
+const Leads = require("../models/lead");
 const ExcelJS = require("exceljs");
+const { Parser } = require("json2csv");
+const PDFDocument = require("pdfkit");
 
-const generateReport = async (req, res) => {
+exports.generateReport = async (req, res) => {
   try {
-    const { startDate, endDate, reportType } = req.body;
-    console.log("Received report request:", req.body);
+    const {
+      startDate,
+      endDate,
+      reportType,
+      fileType = "xlsx",
+      leadowner,
+      status,
+      territory,
+    } = req.body;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ error: "Start and end dates are required" });
+    }
 
     const start = new Date(startDate);
     const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999); // include entire day
+    end.setHours(23, 59, 59, 999);
 
-    const leads = await Lead.find({
-      created_at: {
-        $gte: start,
-        $lte: end,
-      },
-    }).lean();
+    const query = {
+      created_at: { $gte: start, $lte: end },
+    };
+    if (leadowner) query.leadowner = leadowner;
+    if (status) query.status = status;
+    if (territory) query.territory = territory;
 
-    console.log("Leads found:", leads);
+    const leads = await Leads.find(query).lean();
 
-    if (!leads || leads.length === 0) {
-      return res.status(404).json({ message: "No leads found in selected range." });
+    if (!leads.length) {
+      return res
+        .status(400)
+        .json({ error: "No leads found for given criteria." });
     }
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Leads Report");
+    // Filter lead fields based on reportType
+    let fieldsToInclude = [];
+    switch (reportType) {
+      case "source":
+        fieldsToInclude = [
+          "lead_id",
+          "name",
+          "contact",
+          "source",
+          "created_at",
+        ];
+        break;
+      case "status":
+        fieldsToInclude = [
+          "lead_id",
+          "name",
+          "status",
+          "remarks",
+          "created_at",
+        ];
+        break;
+      case "territory":
+        fieldsToInclude = [
+          "lead_id",
+          "name",
+          "territory",
+          "country",
+          "created_at",
+        ];
+        break;
+      case "country":
+        fieldsToInclude = [
+          "lead_id",
+          "name",
+          "country",
+          "territory",
+          "created_at",
+        ];
+        break;
+      case "all":
+      default:
+        fieldsToInclude = Object.keys(leads[0]); // include everything
+        break;
+    }
 
-    if (reportType === "source") {
-      worksheet.columns = [
-        { header: "Source", key: "source", width: 20 },
-        { header: "Lead ID", key: "lead_id", width: 20 },
-        { header: "Owner Email", key: "leadowneremail", width: 25 },
-        { header: "Created At", key: "created_at", width: 20 }
-      ];
+    const filteredLeads = leads.map((lead) => {
+      const filtered = {};
+      for (const key of fieldsToInclude) {
+        filtered[key] = lead[key];
+      }
+      return filtered;
+    });
 
-      leads.forEach((lead) => {
-        worksheet.addRow({
-          source: lead.source,
-          lead_id: lead.lead_id,
-          leadowneremail: lead.leadowneremail,
-          created_at: new Date(lead.created_at).toLocaleString(),
+    // XLSX
+    if (fileType === "xlsx") {
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("Leads Report");
+
+      sheet.columns = fieldsToInclude.map((key) => ({
+        header: key.toUpperCase(),
+        key,
+        width: 20,
+      }));
+
+      filteredLeads.forEach((lead) => sheet.addRow(lead));
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=lead_report.xlsx`
+      );
+
+      await workbook.xlsx.write(res);
+      return res.end();
+
+      // CSV
+    } else if (fileType === "csv") {
+      const parser = new Parser({ fields: fieldsToInclude });
+      const csv = parser.parse(filteredLeads);
+
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=lead_report.csv`
+      );
+      return res.send(csv);
+
+      // PDF
+    } else if (fileType === "pdf") {
+      const doc = new PDFDocument();
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=lead_report.pdf`
+      );
+
+      doc.pipe(res);
+      doc.fontSize(16).text("Lead Report", { align: "center" });
+      doc.moveDown();
+
+      filteredLeads.forEach((lead, index) => {
+        doc.fontSize(10).text(`Lead ${index + 1}`);
+        Object.entries(lead).forEach(([key, value]) => {
+          doc.text(`${key}: ${value}`);
         });
+        doc.moveDown();
       });
-    } else if (reportType === "status") {
-      worksheet.columns = [
-        { header: "Status", key: "status", width: 20 },
-        { header: "Lead ID", key: "lead_id", width: 20 },
-        { header: "Owner Email", key: "leadowneremail", width: 25 },
-        { header: "Created At", key: "created_at", width: 20 }
-      ];
 
-      leads.forEach((lead) => {
-        worksheet.addRow({
-          status: lead.status,
-          lead_id: lead.lead_id,
-          leadowneremail: lead.leadowneremail,
-          created_at: new Date(lead.created_at).toLocaleString(),
-        });
-      });
+      doc.end();
     } else {
-      worksheet.columns = [
-        { header: "Lead ID", key: "lead_id", width: 20 },
-        { header: "Owner Email", key: "leadowneremail", width: 25 },
-        { header: "Source", key: "source", width: 15 },
-        { header: "First Name", key: "firstname", width: 15 },
-        { header: "Last Name", key: "lastname", width: 15 },
-        { header: "Email", key: "email", width: 25 },
-        { header: "Contact", key: "contact", width: 15 },
-        { header: "WhatsApp", key: "whatsapp", width: 15 },
-        { header: "Designation", key: "designation", width: 20 },
-        { header: "Company", key: "company", width: 20 },
-        { header: "Address", key: "address", width: 25 },
-        { header: "Zone", key: "Zone", width: 10 },
-        { header: "Country", key: "country", width: 15 },
-        { header: "Requirements", key: "requirements", width: 30 },
-        { header: "Status", key: "status", width: 15 },
-        { header: "Primary Category", key: "primarycategory", width: 20 },
-        { header: "Secondary Category", key: "secondarycategory", width: 20 },
-        { header: "Is FCA", key: "isfca", width: 10 },
-        { header: "Re-enquired", key: "re_enquired", width: 15 },
-        { header: "Referred By", key: "referredby", width: 20 },
-        { header: "Referred To", key: "referredto", width: 20 },
-        { header: "Created At", key: "created_at", width: 20 },
-        { header: "Updated At", key: "updated_at", width: 20 },
-      ];
-
-      leads.forEach((lead) => {
-        worksheet.addRow({
-          ...lead,
-          created_at: new Date(lead.created_at).toLocaleString(),
-          updated_at: new Date(lead.updated_at).toLocaleString(),
-        });
-      });
+      return res.status(400).json({ error: "Invalid file type requested." });
     }
-
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader("Content-Disposition", "attachment; filename=leads-report.xlsx");
-
-    await workbook.xlsx.write(res);
-    res.end();
   } catch (error) {
-    console.error("Error generating report:", error);
-    res.status(500).json({ message: "Failed to generate report" });
+    console.error("Report generation error:", error);
+    return res
+      .status(500)
+      .json({ error: "Internal server error while generating report." });
   }
 };
-
-module.exports = { generateReport };

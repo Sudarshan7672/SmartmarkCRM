@@ -8,6 +8,7 @@ import UserDropdown from "../components/header/UserDropdown";
 import axios from "axios";
 import BACKEND_URL from "../configs/constants";
 import { useNavigate } from "react-router-dom";
+import { FiPlus } from "react-icons/fi";
 
 interface User {
   username: string;
@@ -38,7 +39,6 @@ const AppHeader: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>();
   const [searchQuery, setSearchQuery] = useState("");
-
 
   const navigate = useNavigate();
 
@@ -93,18 +93,19 @@ const AppHeader: React.FC = () => {
   }, []);
 
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (searchQuery.trim() !== "") {
-        navigate(`/search-leads?query=${encodeURIComponent(searchQuery.trim())}`);
+        navigate(
+          `/search-leads?query=${encodeURIComponent(searchQuery.trim())}`
+        );
       }
     }
   };
-  
 
   return (
     isLoggedIn && (
-      <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+      <header className="sticky top-0 flex w-full bg-white border-gray-200 z-1000 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
         <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
           <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
             <button
@@ -206,17 +207,27 @@ const AppHeader: React.FC = () => {
                     className="w-full py-2 pl-10 pr-4 text-sm border rounded-lg outline-none focus:ring-2 ring-blue-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:border-gray-700"
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearchKeyPress}
-
                     value={searchQuery}
                   />
 
-                  <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
+                  <span className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
                     <span> ⌘ </span>
                     <span> K </span>
-                  </button>
+                  </span>
                 </div>
               </form>
             </div>
+            <div className="hidden lg:block ml-4">
+  <button
+    onClick={() => navigate("/add-lead")}
+    title="Add Lead"
+    className="p-2 text-white bg-blue-600 rounded-full hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+  >
+    <FiPlus size={18} />
+  </button>
+</div>
+
+            
           </div>
           <div
             className={`${
@@ -224,6 +235,7 @@ const AppHeader: React.FC = () => {
             } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
           >
             <div className="flex items-center gap-2 2xsm:gap-3">
+              
               {/* <!-- Dark Mode Toggler --> */}
               <ThemeToggleButton />
               {/* <!-- Dark Mode Toggler --> */}
