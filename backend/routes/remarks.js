@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Lead = require("../models/lead");
-const createRemarkNotification = require("../services/remarkNotification");
+const createRemarkNotification = require("../services/remarknotification");
 
 // POST /remarks/add
 router.post("/add", async (req, res) => {
