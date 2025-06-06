@@ -316,7 +316,7 @@ const Calendar = () => {
    )}
 </div>
 
-<Modal isOpen={isOpen} onClose={closeModal} user={user}>
+<Modal isOpen={isOpen} onClose={closeModal}>
   <div className="fixed inset-0 flex items-center justify-center z-50">
     <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-6 md:p-8 transition-all duration-300">
       <h2 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white text-center">

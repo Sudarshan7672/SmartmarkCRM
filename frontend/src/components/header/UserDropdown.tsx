@@ -55,7 +55,7 @@ export default function UserDropdown({ user }: UserDropdownProps) {
           <img src="/images/user/user.png" alt="User" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{user.fullname}</span>
+        <span className="block mr-1 font-medium text-theme-sm">{user!.fullname}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -83,10 +83,10 @@ export default function UserDropdown({ user }: UserDropdownProps) {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {user.username}
+            {user!.username}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {user.role}
+            {user!.role}
           </span>
         </div>
 
