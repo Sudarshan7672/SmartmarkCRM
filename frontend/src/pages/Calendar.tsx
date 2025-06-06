@@ -52,7 +52,13 @@ const Calendar = () => {
 
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({});
+  interface User {
+    can_delete_followup?: boolean;
+    can_edit_followup?: boolean;
+    // Add other user properties as needed
+    [key: string]: unknown;
+  }
+  const [user, setUser] = useState<User>({});
 
   useEffect(() => {
     axios

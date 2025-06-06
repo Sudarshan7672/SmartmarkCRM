@@ -26,7 +26,7 @@ export default function GenerateReport() {
       setMessage("Please select both start and end dates.");
       return;
     }
-    const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.ceil(((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     if (daysDiff > maxRangeDays) {
       setMessage("Please select a date range within 31 days.");
       return;

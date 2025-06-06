@@ -25,8 +25,14 @@ interface User {
   can_generate_report: boolean;
 }
 
+// before
+// interface UserDropdownProps {
+//   user: User;
+// }
+
+// After
 interface UserDropdownProps {
-  user: User;
+  user: User | null;
 }
 
 export default function UserDropdown({ user }: UserDropdownProps) {

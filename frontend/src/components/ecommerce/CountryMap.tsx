@@ -72,34 +72,35 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
             // Highlight the regions of interest with specific colors
             values: {
               // America
-              US: "#465FFF",
-              CA: "#465FFF",
-              MX: "#465FFF",
-              BR: "#465FFF",
+              US: 1,
+              CA: 1,
+              MX: 1,
+              BR: 1,
 
               // India
-              IN: "#465FFF",
-              PK: "#465FFF",
-              BD: "#465FFF",
+              IN: 1,
+              PK: 1,
+              BD: 1,
 
               // Europe
-              FR: "#465FFF",
-              DE: "#465FFF",
-              IT: "#465FFF",
-              ES: "#465FFF",
-              GB: "#465FFF",
+              FR: 1,
+              DE: 1,
+              IT: 1,
+              ES: 1,
+              GB: 1,
 
               // Southeast Asia
-              SG: "#465FFF",
-              MY: "#465FFF",
-              ID: "#465FFF",
-              TH: "#465FFF",
-              PH: "#465FFF",
-              VN: "#465FFF",
-              LA: "#465FFF",
-              KH: "#465FFF",
-              MM: "#465FFF",
+              SG: 1,
+              MY: 1,
+              ID: 1,
+              TH: 1,
+              PH: 1,
+              VN: 1,
+              LA: 1,
+              KH: 1,
+              MM: 1,
             },
+            scale: ["#465FFF"], // Use scale to map value 1 to the desired color
             attribute: "fill", // Apply fill color to the region
           },
         ],
