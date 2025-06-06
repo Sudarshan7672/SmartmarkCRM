@@ -7,7 +7,7 @@ const router = express.Router();
 const leadConversionNotification = require("../services/leadconversionnotification");
 const leadDeletedNotification = require("../services/leaddeletenotification");
 const { isAuthenticated } = require("../passportconfig");
-const LeadDeleteLog = require("../models/leadDeleteLog"); // Adjust path based on your project structure
+const LeadDeleteLog = require("../models/leaddeletelog"); // Adjust path based on your project structure
 const { logLeadTransfer } = require("../services/transferLogsService");
 
 router.post("/add", async (req, res) => {
