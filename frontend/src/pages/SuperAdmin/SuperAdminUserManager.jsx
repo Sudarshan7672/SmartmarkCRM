@@ -219,9 +219,9 @@ export default function SuperAdminUserManager() {
       <tbody>
         {users.map((u) => (
           <tr key={u._id} className="border-t border-gray-200 dark:border-gray-700">
-            <td className="px-2 py-1">{u.username}</td>
-            <td className="px-2 py-1">{u.fullname}</td>
-            <td className="px-2 py-1">{u.role}</td>
+            <td className="px-2 py-1">{u?.username}</td>
+            <td className="px-2 py-1">{u?.fullname}</td>
+            <td className="px-2 py-1">{u?.role}</td>
             <td className="px-2 py-1 flex gap-2">
               <button
                 onClick={() => handleEdit(u)}

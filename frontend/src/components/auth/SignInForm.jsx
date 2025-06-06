@@ -91,7 +91,7 @@ export default function SignInForm() {
 
         if (res.status === 200) {
           setIsLoggedIn(true);
-          setUsername(res.data.username); // Assuming the response contains the username
+          setUsername(res.data?.username); // Assuming the response contains the username
         }
       } catch (err) {
         setIsLoggedIn(false);

@@ -89,7 +89,7 @@ export default function UserActivityList() {
             <tr key={activity._id} className="even:bg-gray-50 dark:even:bg-gray-800">
               <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                 {activity.userId
-                  ? activity.userId.fullname || activity.userId.username || "Unknown"
+                  ? activity.userId?.fullname || activity.userId?.username || "Unknown"
                   : "Unknown"}
               </td>
               <td className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
