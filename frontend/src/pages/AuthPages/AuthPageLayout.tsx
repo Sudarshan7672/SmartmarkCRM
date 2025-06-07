@@ -21,6 +21,7 @@ export default function AuthLayout({
                 <img
                   // width={231}
                   height={100}
+                  className="bg-white dark:bg-transparent rounded-lg"
                   src="/images/logo/smartmarklogo.png"
                   alt="Logo"
                 />
