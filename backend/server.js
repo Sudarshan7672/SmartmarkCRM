@@ -69,14 +69,14 @@ app.use(morgan("dev")); // Log requests to the console
 // Enable CORS
 // const cors = require("cors");
 const corsOptions = {
+  // origin: [
+  //   "http://localhost:5173",
+  //   "http://localhost:5174",
+  // ],
   origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-  ],
-//   origin: [
-//   "https://www.smartmark.gurubrandingservices.com",
-//   "https://smartmark.gurubrandingservices.com"
-// ],
+  "https://www.smartmark.gurubrandingservices.com",
+  "https://smartmark.gurubrandingservices.com"
+],
  // Allow specific domains
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -107,8 +107,8 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      // sameSite: 'None', // 'none' will work with secure: true
-      // secure: true, // set to true if your using https
+      sameSite: 'None', // 'none' will work with secure: true
+      secure: true, // set to true if your using https
       maxAge: 1000 * 60 * 60 * 24,
     }, // 1 day
   })
