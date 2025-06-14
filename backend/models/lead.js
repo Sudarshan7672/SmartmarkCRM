@@ -115,6 +115,33 @@ const leadSchema = new mongoose.Schema({
     required: false,
     default: false,
   },
+  leadfor: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  ivrticketcode: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  isivrticketopen:{
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  warrantystatus: {
+    type: String,
+    required: false,
+    default: "",
+    enum: ["", "underwarranty", "notunderwarranty", "underamc"],
+  },
+  domesticorexport: {
+    type: String,
+    required: false,
+    default: "",
+    enum: ["", "domestic", "export"],
+  },
   followups: [
     {
       type: mongoose.Schema.Types.ObjectId,

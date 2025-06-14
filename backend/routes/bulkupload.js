@@ -37,25 +37,25 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ message: "Empty or invalid file" });
     }
 
-    // Validate columns
+    // Validate required columns
     const actualColumns = Object.keys(data[0]);
-    const requiredColumns = ["source", "firstname", "lastname", "email", "contact"];
+    const requiredColumns = ["source", "leadfor", "territory", "firstname", "lastname", "contact"];
     const missing = requiredColumns.filter(col => !actualColumns.includes(col));
     if (missing.length > 0) {
       return res.status(400).json({ message: `Missing columns: ${missing.join(", ")}` });
     }
 
-    // Prepare existing email/contact sets
-    const emailOrContactList = data.map(row => ({
-      email: row.email,
-      contact: row.contact
-    }));
+    // Prepare duplicate check conditions
+    const emailOrContactList = data.map(row => {
+      const conditions = [];
+      if (row.email?.trim()) conditions.push({ email: row.email.trim() });
+      if (row.contact?.toString().trim()) conditions.push({ contact: row.contact.toString().trim() });
+      return { $or: conditions };
+    }).filter(cond => cond.$or.length > 0);
 
-    const existingLeads = await Lead.find({
-      $or: emailOrContactList.map(({ email, contact }) => ({
-        $or: [{ email }, { contact }]
-      }))
-    }).lean();
+    const existingLeads = emailOrContactList.length > 0
+      ? await Lead.find({ $or: emailOrContactList }).lean()
+      : [];
 
     const existingEmailSet = new Set(existingLeads.map(l => l.email));
     const existingContactSet = new Set(existingLeads.map(l => l.contact));
@@ -64,44 +64,52 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
     const now = new Date();
     const todayPrefix = `SM${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
 
-    // Fetch all existing lead_ids for today once
+    // Get already used lead_ids for today
     const existingLeadsToday = await Lead.find({ lead_id: { $regex: `^${todayPrefix}` } }).select("lead_id").lean();
     const existingLeadIdsSet = new Set(existingLeadsToday.map(l => l.lead_id));
 
     const usedIds = new Set();
 
-    // Generate leads with unique lead_id
     const leads = [];
     for (const row of data) {
-      // Generate unique lead_id using our function
       const lead_id = await generateUniqueLeadId(usedIds, existingLeadIdsSet);
-
-      const isExisting = existingEmailSet.has(row.email) || existingContactSet.has(row.contact);
+      const isExisting = (row.email && existingEmailSet.has(row.email)) || (row.contact && existingContactSet.has(row.contact));
 
       leads.push({
         lead_id,
-        source: row.source,
-        firstname: row.firstname,
-        lastname: row.lastname,
-        email: row.email,
-        contact: row.contact,
+        source: row.source?.trim() || "",
+        leadfor: row.leadfor?.trim() || "",
+        territory: row.territory?.trim() || "",
+        firstname: row.firstname?.trim() || "",
+        lastname: row.lastname?.trim() || "",
+        contact: row.contact?.toString().trim() || "",
+        email: row.email?.trim() || "",
+        company: row.company?.trim() || "",
         ...(isExisting ? { re_enquired: true } : {})
       });
     }
 
-    // Filter valid leads (firstname and lastname compulsory)
-    const validLeads = leads.filter(lead => lead.firstname && lead.lastname);
+    // Filter valid leads
+    const validLeads = leads.filter(
+      lead =>
+        lead.firstname &&
+        lead.lastname &&
+        lead.contact &&
+        lead.source &&
+        lead.leadfor &&
+        lead.territory
+    );
 
     if (validLeads.length === 0) {
       return res.status(400).json({ message: "No valid leads to insert (missing required fields)" });
     }
 
-    // Insert leads (ordered: true stops on first error)
+    // Insert leads
     const insertedLeads = await Lead.insertMany(validLeads, { ordered: true });
     const count = insertedLeads.length;
     const user = req.user?.fullname || "Unknown User";
 
-    // Log bulk upload action
+    // Log bulk upload
     await BulkActions.create({
       filename: req.file.originalname,
       uploadedby: user,
@@ -109,7 +117,7 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
       stage: "completed"
     });
 
-    // Create notification
+    // Send notification
     await createBulkUploadNotification({
       uploadedBy: user,
       count,
@@ -134,6 +142,7 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
     return res.status(500).json({ message: "Server error during upload", error: err.message });
   }
 });
+
 
 router.get("/actions", async (req, res) => {
   try {

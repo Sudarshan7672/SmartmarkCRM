@@ -23,6 +23,7 @@ const notificationSchema = new mongoose.Schema({
       "lead_conversion",
       "lead_deleted",
       "system_alert",
+      "password_change",
     ],
     required: true,
   },

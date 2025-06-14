@@ -12,7 +12,7 @@ const { logLeadTransfer } = require("../services/transferLogsService");
 
 router.post("/add", async (req, res) => {
   try {
-    const {
+    let {
       leadowner,
       source,
       firstname,
@@ -31,6 +31,11 @@ router.post("/add", async (req, res) => {
       primarycategory,
       secondarycategory,
       isfca,
+      leadfor,
+      ivrticketcode,
+      isivrticketopen,
+      warrantystatus,
+      domesticorexport,
       followupdate, // ✅ Extract followupdate
       remarks,
       updatelogs,
@@ -88,6 +93,12 @@ router.post("/add", async (req, res) => {
       return res.status(500).json({ error: "Lead ID conflict, please retry" });
     }
 
+    // set the isivrticketopen to true if ivrticketcode is provided
+
+    if(ivrticketcode!="" && ivrticketcode!=null && ivrticketcode!="undefined") {
+      isivrticketopen = true;
+    }
+
     // Create new lead
     const newLead = new Lead({
       lead_id,
@@ -109,6 +120,11 @@ router.post("/add", async (req, res) => {
       primarycategory,
       secondarycategory,
       isfca,
+      leadfor,
+      ivrticketcode,
+      isivrticketopen,
+      warrantystatus,
+      domesticorexport,
       re_enquired,
       followups: followUpDate ? [{ followupdate: followUpDate }] : [], // ✅ Store follow-up date
       remarks: remarks || [],
@@ -296,6 +312,14 @@ router.get("/get-leads", async (req, res) => {
       }
     } else if (["CRM Manager", "Admin", "SuperAdmin"].includes(user?.role)) {
       roleFilter.primarycategory = { $in: ["", "sales", "support"] };
+
+      if (user.fullname === "Shweta Giri") {
+      roleFilter.isivrticketopen = true;
+      // roleFilter.primarycategory = "sales";
+      // roleFilter.secondarycategory = { $in: ["group 3"] };
+      // roleFilter.leadowner = { $in: ["Shweta Patil"] };
+    }
+    
     }
 
     // Status filter

@@ -10,6 +10,10 @@ import {
   FaTrash,
   FaPlus,
   FaCalendarPlus,
+  FaUserTag,
+  FaShieldAlt,
+  FaTicketAlt,
+  FaGlobeAmericas,
 } from "react-icons/fa";
 import { toast } from "react-toastify"; // Optional for feedback
 import AddFollowUp from "../../components/Modals/AddFollowUpModal";
@@ -87,6 +91,80 @@ export default function LeadCard({
     }
   };
 
+  const getWarrantyStatusItem = (value) => {
+    const status = value?.toLowerCase();
+
+    if (status === "notunderwarranty") {
+      return {
+        icon: <FaShieldAlt className="text-red-500" />,
+        value: "Not Under Warranty",
+      };
+    } else if (status === "underwarranty") {
+      return {
+        icon: <FaShieldAlt className="text-green-500" />,
+        value: "Under Warranty",
+      };
+    } else if (status === "underamc") {
+      return {
+        icon: <FaShieldAlt className="text-yellow-500" />,
+        value: "Under AMC",
+      };
+    }
+    return {
+      icon: <FaShieldAlt className="text-gray-400" />,
+      value: "N/A",
+    };
+  };
+
+  const getLeadForItem = (value) => {
+    const leadFor = value?.toLowerCase();
+
+    if (leadFor === "dotpeen") {
+      return {
+        icon: <FaUserTag className="text-blue-500" />,
+        value: "Dotpeen",
+      };
+    } else if (leadFor === "laser") {
+      return {
+        icon: <FaUserTag className="text-green-500" />,
+        value: "Laser",
+      };
+    } else if (leadFor === "other") {
+      return {
+        icon: <FaUserTag className="text-purple-500" />,
+        value: "Other",
+      };
+    }
+    return {
+      icon: <FaUserTag className="text-gray-400" />,
+      value: "N/A",
+    };
+  };
+
+  const getDomesticexportItem = (value) => {
+    const type = value?.toLowerCase();
+
+    if (type === "domestic") {
+      return {
+        icon: <FaGlobeAmericas className="text-green-600" />,
+        value: "Domestic",
+      };
+    } else if (type === "export") {
+      return {
+        icon: <FaGlobeAmericas className="text-blue-600" />,
+        value: "Export",
+      };
+    }
+    return {
+      icon: <FaGlobeAmericas className="text-gray-400" />,
+      value: "N/A",
+    };
+  };
+
+  const warrantyItem = getWarrantyStatusItem(leadData.warrantystatus);
+  const leadForItem = getLeadForItem(leadData.leadfor);
+  const domIntItem = getDomesticexportItem(leadData.domesticexport);
+
   const renderDetails = () => {
     const items = [
       {
@@ -155,6 +233,26 @@ export default function LeadCard({
         value: leadData.referredto || "N/A",
       },
       {
+        icon: leadForItem.icon,
+        label: "Lead For",
+        value: leadForItem.value,
+      },
+      {
+        icon: warrantyItem.icon,
+        label: "Warranty Status",
+        value: warrantyItem.value,
+      },
+      {
+        icon: <FaTicketAlt className="text-yellow-500" />,
+        label: "IVR Ticket Code",
+        value: leadData.ivrticketcode ? leadData.ivrticketcode : "N/A",
+      },
+      {
+        icon: domIntItem.icon,
+        label: "Domestic/export",
+        value: domIntItem.value,
+      },
+      {
         icon: <FaInfoCircle className="text-blue-500" />,
         label: "Added At",
         value: leadData.created_at
@@ -185,7 +283,7 @@ export default function LeadCard({
     ];
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-1 text-sm">
         {items.map((item, index) => (
           <DetailCard
             key={index}
@@ -287,7 +385,7 @@ export default function LeadCard({
       <div className="border p-6 rounded-2xl shadow-lg bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 w-full hover:shadow-xl transition-all space-y-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-center p-3 rounded-xl bg-white dark:bg-gray-900 shadow hover:shadow-lg transition-all">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-[60%]">
             <div className="flex flex-col">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
@@ -313,6 +411,10 @@ export default function LeadCard({
                 <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
                   Group - {leadData.secondarycategory || "N/A"}
                 </span>
+                {leadData.ivrticketcode && 
+                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                  Ticket - {leadData.isivrticketopen?"open":"closed" || "NO"}
+                </span>}
               </div>
             </div>
           </div>

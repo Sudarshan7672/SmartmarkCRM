@@ -18,6 +18,7 @@ export default function Logout() {
 
         if (res.status === 200) {
           setStatus("success");
+          localStorage.removeItem("isAuthenticated");
           setTimeout(() => {
             navigate("/");
             window.location.reload();

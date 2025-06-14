@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import ButtonLoader from "../../components/common/ButtonLoader";
+import { toast } from "react-toastify";
+// import { set } from "lodash";
 type User = {
   can_add_individual_lead?: boolean;
   can_add_bulk_lead?: boolean;
@@ -56,6 +58,11 @@ const LeadForm = () => {
     primarycategory: "",
     secondarycategory: "",
     isfca: false,
+    leadfor: "",
+    ivrticketcode: "",
+    isivrticketopen: false,
+    warrantystatus: "",
+    domesticorexport: "",
     referredby: "",
     referredto: "",
   });
@@ -102,18 +109,71 @@ const LeadForm = () => {
     const { name, value, type } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     });
   };
 
+  // Validation functions
+  // firstname
+  const validateFirstName = (name: string) => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+  };
+
+  // lastname
+  const validateLastName = (name: string) => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+  };
+
+  // whatsapp
+  // const validateWhatsappNumber = (number: string) => {
+  //   const phoneRegex = /^[0-9]{10}$/;
+  //   return phoneRegex.test(number);
+  // };
+
+  // contact
   const validatePhoneNumber = (number: string) => {
     const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(number);
   };
 
+  // email
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex =
+      /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,63})@[a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+$/;
+    // setMessage("Invalid email address");
     return emailRegex.test(email);
+  };
+
+  // designation
+  const validateDesignation = (designation: string) => {
+    const designationRegex = /^[a-zA-Z\s]+$/;
+    return designationRegex.test(designation);
+  };
+
+  // country
+  const validateCountry = (country: string) => {
+    const countryRegex = /^[a-zA-Z\s]+$/;
+    return countryRegex.test(country);
+  };
+
+  // ivrticketcode
+  const validateIvrTicketCode = (code: string) => {
+    const codeRegex = /^[a-zA-Z0-9]+$/;
+    return codeRegex.test(code);
+  };
+
+  // refeerredby
+  const validateReferredBy = (referredBy: string) => {
+    const referredByRegex = /^[a-zA-Z\s]+$/; // Adjust regex as per your referred by format
+    return referredByRegex.test(referredBy);
+  };
+  // referredto
+  const validateReferredTo = (referredTo: string) => {
+    const referredToRegex = /^[a-zA-Z\s]+$/; // Adjust regex as per your referred to format
+    return referredToRegex.test(referredTo);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -135,6 +195,44 @@ const LeadForm = () => {
       setMessage("Invalid email address");
       return;
     }
+    // Validate first name
+    if (!validateFirstName(formData.firstname)) {
+      setMessage("Invalid first name (only letters and spaces allowed)");
+      return;
+    }
+    // Validate last name
+    if (!validateLastName(formData.lastname)) {
+      setMessage("Invalid last name (only letters and spaces allowed)");
+      return;
+    }
+    // Validate designation
+    if (formData.designation && !validateDesignation(formData.designation)) {
+      setMessage("Invalid designation (only letters and spaces allowed)");
+      return;
+    }
+    // Validate country
+    if (formData.country && !validateCountry(formData.country)) {
+      setMessage("Invalid country (only letters and spaces allowed)");
+      return;
+    }
+    // Validate IVR ticket code
+    if (
+      formData.ivrticketcode &&
+      !validateIvrTicketCode(formData.ivrticketcode)
+    ) {
+      setMessage("Invalid IVR ticket code (alphanumeric allowed)");
+      return;
+    }
+    // Validate referred by
+    if (formData.referredby && !validateReferredBy(formData.referredby)) {
+      setMessage("Invalid referred by (only letters and spaces allowed)");
+      return;
+    }
+    // Validate referred to
+    if (formData.referredto && !validateReferredTo(formData.referredto)) {
+      setMessage("Invalid referred to (only letters and spaces allowed)");
+      return;
+    }
 
     setIsLoading(true);
     setMessage("");
@@ -142,14 +240,16 @@ const LeadForm = () => {
     let leadResponse;
     try {
       // Step 1: Create Lead
-      leadResponse = await axios.post(
-        `${BACKEND_URL}/leads/add`,
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
-      console.log("Lead added successfully:", leadResponse.data);
+      leadResponse = await axios.post(`${BACKEND_URL}/leads/add`, formData, {
+        withCredentials: true,
+      });
+      // console.log("Lead added successfully:", leadResponse.data);
+      toast.success("Lead added!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        theme: "colored",
+      });
       setMessage("Lead added successfully");
       // Reset form data
       setFormData({
@@ -171,6 +271,11 @@ const LeadForm = () => {
         primarycategory: "",
         secondarycategory: "",
         isfca: false,
+        leadfor: "",
+        ivrticketcode: "",
+        isivrticketopen: false,
+        warrantystatus: "",
+        domesticorexport: "",
         referredby: "",
         referredto: "",
       });
@@ -180,7 +285,10 @@ const LeadForm = () => {
       console.error("Error submitting lead:", error);
       let errorMessage = "Something went wrong";
       if (axios.isAxiosError(error)) {
-        errorMessage = error.response?.data?.error || error.message || "Something went wrong";
+        errorMessage =
+          error.response?.data?.error ||
+          error.message ||
+          "Something went wrong";
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -207,7 +315,7 @@ const LeadForm = () => {
         </h2>
         {message && <p className="text-center text-red-500">{message}</p>}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-2">
+        <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2">
           <select
             name="source"
             className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
@@ -217,7 +325,7 @@ const LeadForm = () => {
             <option disabled value="">
               Source (Required)
             </option>
-            <option value="">Select Source</option>
+            {/* <option value="">Select Source</option> */}
             <option value="api lead">API Lead</option>
             <option value="chatbot">Google Ads/Chatbot</option>
             <option value="meta ad">Meta Ads</option>
@@ -414,6 +522,54 @@ const LeadForm = () => {
               </option>
             ))}
           </select>
+          <select
+            name="leadfor"
+            className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
+            onChange={handleChange}
+            value={formData.leadfor}
+          >
+            <option disabled value="">
+              Select Lead For
+            </option>
+            <option value="dotpeen">Dotpeen</option>
+            <option value="laser">Laser</option>
+            <option value="others">Others</option>
+            {/* <option value="warranty">Warranty</option> */}
+          </select>
+          <select
+            name="domesticorexport"
+            className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
+            onChange={handleChange}
+            value={formData.domesticorexport}
+          >
+            <option disabled value="">
+              Domestic or export
+            </option>
+            <option value="domestic">Domestic</option>
+            <option value="export">export</option>
+          </select>
+
+          <input
+            type="text"
+            name="ivrticketcode"
+            placeholder="IVR Ticket Code"
+            className="border border-gray-300 rounded px-3 py-2"
+            onChange={handleChange}
+            value={formData.ivrticketcode}
+          />
+          <select
+            name="warrantystatus"
+            className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
+            onChange={handleChange}
+            value={formData.warrantystatus}
+          >
+            <option disabled value="">
+              Select Warranty Status
+            </option>
+            <option value="underwarranty">Under Warranty</option>
+            <option value="notunderwarranty">Not Under Warranty</option>
+            <option value="underamc">Under AMC</option>
+          </select>
 
           <input
             type="text"
@@ -435,7 +591,7 @@ const LeadForm = () => {
           {/* Removed transferredto field as it doesn't exist in the schema */}
 
           {/* Checkbox for Is FCA */}
-          <label className="flex items-center space-x-2 col-span-2">
+          <label className="flex items-center space-x-2 col-span-">
             <input
               type="checkbox"
               name="isfca"
@@ -447,7 +603,7 @@ const LeadForm = () => {
 
           {/* Submit Button */}
           {user.can_add_individual_lead && isLoggedIn && (
-            <div className="col-span-2">
+            <div className="col-span-3">
               <button
                 type="submit"
                 className={`w-full h-[40px] text-white py-2 rounded-lg flex items-center justify-center

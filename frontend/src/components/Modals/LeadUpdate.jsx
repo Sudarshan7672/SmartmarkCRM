@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
+import { toast } from "react-toastify";
 
 const LeadUpdate = ({ isOpen, onClose, existingData }) => {
   const [formData, setFormData] = useState(existingData);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const states = [
     "Andhra Pradesh",
@@ -47,8 +49,126 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
     });
   };
 
+  // Validation functions
+  // firstname
+  const validateFirstName = (name) => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+  };
+
+  // lastname
+  const validateLastName = (name) => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+  };
+
+  // whatsapp
+  const validateWhatsappNumber = (number) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(number);
+  };
+
+  // contact
+  const validatePhoneNumber = (number) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(number);
+  };
+
+  // email
+  const validateEmail = (email) => {
+    const emailRegex =
+      /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,63})@[a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+$/;
+    // setMessage("Invalid email address");
+    return emailRegex.test(email);
+  };
+
+  // designation
+  const validateDesignation = (designation) => {
+    const designationRegex = /^[a-zA-Z\s]+$/;
+    return designationRegex.test(designation);
+  };
+
+  // country
+  const validateCountry = (country) => {
+    const countryRegex = /^[a-zA-Z\s]+$/;
+    return countryRegex.test(country);
+  };
+
+  // ivrticketcode
+  const validateIvrTicketCode = (code) => {
+    const codeRegex = /^[a-zA-Z0-9]+$/;
+    return codeRegex.test(code);
+  };
+
+  // refeerredby
+  const validateReferredBy = (referredBy) => {
+    const referredByRegex = /^[a-zA-Z\s]+$/; // Adjust regex as per your referred by format
+    return referredByRegex.test(referredBy);
+  };
+  // referredto
+  const validateReferredTo = (referredTo) => {
+    const referredToRegex = /^[a-zA-Z\s]+$/; // Adjust regex as per your referred to format
+    return referredToRegex.test(referredTo);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate phone numbers
+    if (!validatePhoneNumber(formData.contact)) {
+      setMessage("Invalid contact number (10 digits required)");
+      return;
+    }
+
+    if (formData.whatsapp && !validatePhoneNumber(formData.whatsapp)) {
+      setMessage("Invalid WhatsApp number (10 digits required)");
+      return;
+    }
+
+    // Validate email
+    if (!validateEmail(formData.email)) {
+      setMessage("Invalid email address");
+      return;
+    }
+    // Validate first name
+    if (!validateFirstName(formData.firstname)) {
+      setMessage("Invalid first name (only letters and spaces allowed)");
+      return;
+    }
+    // Validate last name
+    if (!validateLastName(formData.lastname)) {
+      setMessage("Invalid last name (only letters and spaces allowed)");
+      return;
+    }
+    // Validate designation
+    if (formData.designation && !validateDesignation(formData.designation)) {
+      setMessage("Invalid designation (only letters and spaces allowed)");
+      return;
+    }
+    // Validate country
+    if (formData.country && !validateCountry(formData.country)) {
+      setMessage("Invalid country (only letters and spaces allowed)");
+      return;
+    }
+    // Validate IVR ticket code
+    if (
+      formData.ivrticketcode &&
+      !validateIvrTicketCode(formData.ivrticketcode)
+    ) {
+      setMessage("Invalid IVR ticket code (alphanumeric allowed)");
+      return;
+    }
+    // Validate referred by
+    if (formData.referredby && !validateReferredBy(formData.referredby)) {
+      setMessage("Invalid referred by (only letters and spaces allowed)");
+      return;
+    }
+    // Validate referred to
+    if (formData.referredto && !validateReferredTo(formData.referredto)) {
+      setMessage("Invalid referred to (only letters and spaces allowed)");
+      return;
+    }
+
     setLoading(true);
     try {
       console.log("Submitting form data:", formData);
@@ -56,8 +176,18 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
         withCredentials: true,
       });
       // alert("Lead updated successfully!");
+      
       onClose();
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload(); // Reload the page to reflect the updated lead
+      }
+      , 1000);
+      toast.success("Lead Updated!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        theme: "colored",
+      });
     } catch (error) {
       console.error("Error updating lead:", error);
       alert("Failed to update lead.");
@@ -78,7 +208,12 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
         <h2 className="text-xl font-semibold text-blue-600 mb-4">
           Update Lead
         </h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-4 gap-2">
+        {message && (
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+            <strong>Error:</strong> {message}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="grid grid-cols-5 gap-2">
           {/* Source */}
           <label className="flex flex-col font-medium">
             Source (Required)
@@ -89,7 +224,9 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               value={formData.source}
               required
             >
-              <option value="">Select Source</option>
+              <option disabled value="">
+                Select Source (Required)
+              </option>
               <option value="api lead">API Lead</option>
               <option value="chatbot">Google Ads/Chatbot</option>
               <option value="meta ad">Meta Ads</option>
@@ -103,7 +240,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
           </label>
           {/* Lead Owner Email */}
           <label className="flex flex-col font-medium">
-            Select Leadowner(Required)
+            Leadowner(Required)
             <select
               name="leadowner"
               className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
@@ -129,12 +266,32 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               onChange={handleChange}
               value={formData.territory}
             >
-              <option value="">Select Territory</option>
+              <option disabled value="">
+                Select Territory
+              </option>
               <option value="T1 - South and West">T1 - South and West</option>
               <option value="T2 - North, East and Central">
                 T2 - North, East and Central
               </option>
               {/* Add more if needed */}
+            </select>
+          </label>
+
+          {/* for state */}
+          <label className="flex flex-col font-medium">
+            State
+            <select
+              name="state"
+              className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
+              onChange={handleChange}
+              value={formData.state}
+            >
+              <option value="">Select State</option>
+              {states.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -166,12 +323,12 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             },
             { label: "WhatsApp", name: "whatsapp", type: "number" },
             { label: "Designation", name: "designation", type: "text" },
-            { label: "Company", name: "company", type: "text" },
+            { label: "Company", name: "company", type: "textarea" },
+            { label: "Country", name: "country", type: "textarea" },
             { label: "Address", name: "address", type: "textarea" },
             // { label: "territory", name: "territory", type: "text" },
-            { label: "Country", name: "country", type: "text" },
             { label: "Requirements", name: "requirements", type: "textarea" },
-            { label: "Referred By", name: "referredby", type: "text" },
+            { label: "Referred By", name: "referredby", type: "textarea" },
             { label: "Referred To", name: "referredto", type: "text" },
           ].map(({ label, name, type, required }) => (
             <label key={name} className="flex flex-col font-medium">
@@ -196,24 +353,6 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             </label>
           ))}
 
-          {/* for state */}
-          <label className="flex flex-col font-medium">
-            State
-            <select
-              name="state"
-              className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
-              onChange={handleChange}
-              value={formData.state}
-            >
-              <option value="">Select State</option>
-              {states.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
-            </select>
-          </label>
-
           {/* Primary & Secondary Category */}
           <label className="flex flex-col font-medium">
             Primary Category
@@ -223,7 +362,9 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               onChange={handleChange}
               value={formData.primarycategory}
             >
-              <option value="">Select Primary Category</option>
+              <option disabled value="">
+                Select Primary Category
+              </option>
               <option value="sales">Sales</option>
               <option value="support">Support</option>
             </select>
@@ -236,7 +377,9 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               onChange={handleChange}
               value={formData.secondarycategory}
             >
-              <option value="">Select Secondary Category</option>
+              <option disabled value="">
+                Select Secondary Category
+              </option>
               {[...Array(6)].map((_, index) => (
                 <option key={index} value={`group ${index + 1}`}>
                   Group {index + 1}
@@ -254,7 +397,9 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               onChange={handleChange}
               value={formData.status}
             >
-              <option value="">Select Status</option>
+              <option disabled value="">
+                Select Status
+              </option>
               {[
                 "New",
                 "Not-Connected",
@@ -272,8 +417,72 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             </select>
           </label>
 
+          <label className="flex flex-col font-medium">
+            Lead for
+            <select
+              name="leadfor"
+              className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
+              onChange={handleChange}
+              value={formData.leadfor}
+            >
+              <option disabled value="">
+                Select Lead For
+              </option>
+              <option value="dotpeen">Dotpeen</option>
+              <option value="laser">Laser</option>
+              <option value="others">Others</option>
+            </select>
+          </label>
+
+          {/* for domestic and export */}
+          <label className="flex flex-col font-medium">
+            Domestic/export
+            <select
+              name="domesticandexport"
+              className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
+              onChange={handleChange}
+              value={formData.domesticorexport}
+            >
+              <option disabled value="">
+                Select Domestic/export
+              </option>
+              <option value="domestic">Domestic</option>
+              <option value="export">export</option>
+            </select>
+          </label>
+
+          {/* ivr ticket code input */}
+          <label className="flex flex-col font-medium">
+            IVR Ticket Code
+            <input
+              type="text"
+              name="ivrticketcode"
+              className="border rounded px-3 py-2 w-full"
+              onChange={handleChange}
+              value={formData.ivrticketcode || ""}
+            />
+          </label>
+
+          {/* select status warranty dropdown */}
+          <label className="flex flex-col font-medium">
+            Warranty Status
+            <select
+              name="warrantystatus"
+              className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
+              onChange={handleChange}
+              value={formData.warrantystatus}
+            >
+              <option disabled value="">
+                Select Warranty Status
+              </option>
+              <option value="underwarranty">Under Warranty</option>
+              <option value="notunderwarranty">Not Under Warranty</option>
+              <option value="underamc">Under AMC</option>
+            </select>
+          </label>
+
           {/* Is FCA Checkbox */}
-          <label className="flex items-center space-x-2 font-medium pt-6">
+          <label className="flex items-center space-x-2 font-medium pt-6 pl-5">
             <input
               type="checkbox"
               name="isfca"
@@ -284,10 +493,22 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             <span>Is FCA</span>
           </label>
 
-          <div className="col-span-2">
+          {/* isivrticketopen */}
+          <label className="flex items-center space-x-2 font-medium pt-6 pl-6">
+            <input
+              type="checkbox"
+              name="isivrticketopen"
+              onChange={handleChange}
+              checked={formData.isivrticketopen}
+              className="w-5 h-5"
+            />
+            <span>Is IVR Ticket Open</span>
+          </label>
+
+          <div className="col-span-4 m-auto">
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+              className="w-[200px] bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
               disabled={loading}
             >
               {loading ? "Updating..." : "Update Lead"}
