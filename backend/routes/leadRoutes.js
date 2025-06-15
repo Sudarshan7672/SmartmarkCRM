@@ -300,6 +300,10 @@ router.get("/get-leads", async (req, res) => {
         roleFilter.secondarycategory = { $in: ["group 5", "group 6"] };
         roleFilter.leadowner = { $in: ["Aakansha Rathod"] };
       }
+      if (user.fullname === "Shweta Giri") {
+      roleFilter.isivrticketopen = true;
+      roleFilter.leadowner = { $in: ["Shweta Giri"] };
+    }
     } else if (user?.role === "Sales") {
       roleFilter.primarycategory = "sales";
       if (user?.fullname === "Prathamesh Mane") {
@@ -312,14 +316,6 @@ router.get("/get-leads", async (req, res) => {
       }
     } else if (["CRM Manager", "Admin", "SuperAdmin"].includes(user?.role)) {
       roleFilter.primarycategory = { $in: ["", "sales", "support"] };
-
-      if (user.fullname === "Shweta Giri") {
-      roleFilter.isivrticketopen = true;
-      // roleFilter.primarycategory = "sales";
-      // roleFilter.secondarycategory = { $in: ["group 3"] };
-      // roleFilter.leadowner = { $in: ["Shweta Patil"] };
-    }
-    
     }
 
     // Status filter

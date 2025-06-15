@@ -254,6 +254,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               <option value="Bharat Kokatnur">Bharat Kokatnur</option>
               <option value="Aakansha Rathod">Aakansha Rathod</option>
               <option value="Prathamesh Mane">Prathamesh Mane</option>
+              <option value="Shweta Giri">Shweta Giri</option>
               {/* <option value="Aniket S. Kulkarni">Aniket S. Kulkarni</option> */}
               {/* <option value="Aakansha Rathod">Aakansha Rathod</option> */}
             </select>
