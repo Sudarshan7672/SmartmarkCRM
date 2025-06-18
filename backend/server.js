@@ -10,6 +10,21 @@ const mongoStore = require("connect-mongo");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const swaggerDocument = YAML.load("./swagger.yaml");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
+// Enable Helmet middleware
+app.use(helmet());
+// Apply rate limiting globally (e.g., max 100 requests per 15 minutes per IP)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 2000, // Limit each IP to 2000 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: "Too many requests from this IP, please try again later.",
+});
+
+app.use(limiter);
 
 // Initialize MongoDB connection
 const ConnectDb = require("./db");
@@ -69,15 +84,12 @@ app.use(morgan("dev")); // Log requests to the console
 // Enable CORS
 // const cors = require("cors");
 const corsOptions = {
-  // origin: [
-  //   "http://localhost:5173",
-  //   "http://localhost:5174",
-  // ],
-  origin: [
-  "https://www.smartmark.gurubrandingservices.com",
-  "https://smartmark.gurubrandingservices.com"
-],
- // Allow specific domains
+  // origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: [
+    "https://www.smartmark.gurubrandingservices.com",
+    "https://smartmark.gurubrandingservices.com"
+  ],
+  // Allow specific domains
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],
@@ -170,8 +182,7 @@ app.use("/api/v1/user-activity", require("./routes/useractivities.js"));
 app.use("/api/v1/superadmin", require("./routes/superadmin.js"));
 
 // user routes
-app.use('/api/v1/users', require('./routes/user.js'));
-
+app.use("/api/v1/users", require("./routes/user.js"));
 
 // Handle 404 errors
 app.use((req, res, next) => {

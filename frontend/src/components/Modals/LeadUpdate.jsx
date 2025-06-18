@@ -278,6 +278,26 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             </select>
           </label>
 
+          {/* for region */}
+          <label className="flex flex-col font-medium">
+            Region
+            <select
+              name="region"
+              className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
+              onChange={handleChange}
+              value={formData.region}
+            >
+              <option disabled value="">
+                Select Region
+              </option>
+              <option value="east">East</option>
+              <option value="west">West</option>
+              <option value="north">North</option>
+              <option value="south">South</option>
+              <option value="central">Central</option>
+            </select>
+          </label>
+
           {/* for state */}
           <label className="flex flex-col font-medium">
             State

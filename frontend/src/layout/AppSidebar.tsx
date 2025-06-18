@@ -171,16 +171,16 @@ const usernavItems: NavItem[] = [
     name: "Raw Data Manager",
     path: "/add-lead",
   },
-  {
-    icon: <PieChartIcon />,
-    name: "Bulk Upload Manager",
-    path: "/bulk-upload",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Bulk Actions",
-    path: "/bulk-actions",
-  },
+  // {
+  //   icon: <PieChartIcon />,
+  //   name: "Bulk Upload Manager",
+  //   path: "/bulk-upload",
+  // },
+  // {
+  //   icon: <ListIcon />,
+  //   name: "Bulk Actions",
+  //   path: "/bulk-actions",
+  // },
   {
     icon: <PageIcon />,
     name: "Raise a Ticket",

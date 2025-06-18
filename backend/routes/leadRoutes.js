@@ -24,6 +24,7 @@ router.post("/add", async (req, res) => {
       company,
       address,
       territory,
+      region,
       state,
       country,
       requirements,
@@ -113,6 +114,7 @@ router.post("/add", async (req, res) => {
       company,
       address,
       territory,
+      region,
       state,
       country,
       requirements,
@@ -316,6 +318,9 @@ router.get("/get-leads", async (req, res) => {
       }
     } else if (["CRM Manager", "Admin", "SuperAdmin"].includes(user?.role)) {
       roleFilter.primarycategory = { $in: ["", "sales", "support"] };
+      if (user?.fullname === "Aniket S. Kulkarni") {
+        roleFilter.source = { $in: ["chatbot"] };
+      }
     }
 
     // Status filter

@@ -101,6 +101,14 @@ const BulkUploadManager = () => {
     "T2 - North, East and Central",
   ]
 
+  const validregions = [
+    "east",
+    "west",
+    "north",
+    "south",
+    "central",
+  ];
+
   const handleTemplateDownload = () => {
     const templateUrl = `/format.${fileType}`;
     window.location.href = templateUrl;
@@ -151,6 +159,7 @@ const handleFileChange = (e) => {
         !row.source ||
         !row.leadfor ||
         !row.territory ||
+        !row.contact ||
         !validSources.includes(row.source.toLowerCase())
         || !validTerritories.includes(row.territory)
     );

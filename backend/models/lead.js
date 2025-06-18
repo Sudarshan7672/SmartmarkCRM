@@ -1,4 +1,5 @@
 const { default: mongoose } = require("mongoose");
+const { registerFont } = require("pdfkit");
 const { Schema } = mongoose; // <-- add this line
 
 const leadSchema = new mongoose.Schema({
@@ -51,6 +52,11 @@ const leadSchema = new mongoose.Schema({
     default: "",
   },
   territory: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  region: {
     type: String,
     required: false,
     default: "",

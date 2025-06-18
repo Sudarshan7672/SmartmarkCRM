@@ -51,6 +51,7 @@ const LeadForm = () => {
     company: "",
     address: "",
     territory: "",
+    region: "",
     state: "",
     country: "",
     requirements: "",
@@ -264,6 +265,7 @@ const LeadForm = () => {
         company: "",
         address: "",
         territory: "",
+        region: "",
         state: "",
         country: "",
         requirements: "",
@@ -450,11 +452,25 @@ const LeadForm = () => {
             onChange={handleChange}
             value={formData.territory}
           >
-            <option value="">Select Territory</option>
+            <option value="" disabled>Select Territory</option>
             <option value="T1 - South and West">T1 - South and West</option>
             <option value="T2 - North, East and Central">
               T2 - North, East and Central
             </option>
+          </select>
+
+          <select
+            name="region"
+            className="border border-gray-300 rounded px-3 py-2"
+            onChange={handleChange}
+            value={formData.region}
+          >
+            <option value="" disabled >Select Region</option>
+            <option value="east">East</option>
+            <option value="west">West</option>
+            <option value="north">North</option>
+            <option value="south">South</option>
+            <option value="central">Central</option>
           </select>
 
           <input
