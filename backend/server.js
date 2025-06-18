@@ -12,6 +12,8 @@ const YAML = require("yamljs");
 const swaggerDocument = YAML.load("./swagger.yaml");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+// Initialize Express app
+const app = express();
 
 // Enable Helmet middleware
 app.use(helmet());
@@ -68,8 +70,7 @@ cron.schedule("0 9-18 * * *", async () => {
 // Load environment variables
 dotenv.config();
 
-// Initialize Express app
-const app = express();
+
 
 // Set port from environment variables or default to 8080
 const PORT = process.env.PORT || 8080;
