@@ -42,8 +42,7 @@ const LeadForm = () => {
   const [formData, setFormData] = useState({
     leadowner: "",
     source: "",
-    firstname: "",
-    lastname: "",
+    fullname: "",
     email: "",
     contact: "",
     whatsapp: "",
@@ -116,17 +115,17 @@ const LeadForm = () => {
   };
 
   // Validation functions
-  // firstname
-  const validateFirstName = (name: string) => {
+  // fullname
+  const validatefullname = (name: string) => {
     const nameRegex = /^[a-zA-Z\s]+$/;
     return nameRegex.test(name);
   };
 
   // lastname
-  const validateLastName = (name: string) => {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    return nameRegex.test(name);
-  };
+  // const validateLastName = (name: string) => {
+  //   const nameRegex = /^[a-zA-Z\s]+$/;
+  //   return nameRegex.test(name);
+  // };
 
   // whatsapp
   // const validateWhatsappNumber = (number: string) => {
@@ -142,9 +141,9 @@ const LeadForm = () => {
 
   // email
   const validateEmail = (email: string) => {
+    if (email.trim() === "") return true; // Accept empty
     const emailRegex =
       /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,63})@[a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+$/;
-    // setMessage("Invalid email address");
     return emailRegex.test(email);
   };
 
@@ -197,15 +196,15 @@ const LeadForm = () => {
       return;
     }
     // Validate first name
-    if (!validateFirstName(formData.firstname)) {
+    if (!validatefullname(formData.fullname)) {
       setMessage("Invalid first name (only letters and spaces allowed)");
       return;
     }
     // Validate last name
-    if (!validateLastName(formData.lastname)) {
-      setMessage("Invalid last name (only letters and spaces allowed)");
-      return;
-    }
+    // if (!validateLastName(formData.lastname)) {
+    //   setMessage("Invalid last name (only letters and spaces allowed)");
+    //   return;
+    // }
     // Validate designation
     if (formData.designation && !validateDesignation(formData.designation)) {
       setMessage("Invalid designation (only letters and spaces allowed)");
@@ -256,8 +255,7 @@ const LeadForm = () => {
       setFormData({
         leadowner: "",
         source: "",
-        firstname: "",
-        lastname: "",
+        fullname: "",
         email: "",
         contact: "",
         whatsapp: "",
@@ -348,38 +346,32 @@ const LeadForm = () => {
             <option disabled value="">
               Select Leadowner (Required)
             </option>
+            <option value="Aniket S. Kulkarni">Aniket S. Kulkarni</option>
             <option value="Bharat Kokatnur">Bharat Kokatnur</option>
             <option value="Aakansha Rathod">Aakansha Rathod</option>
             <option value="Prathamesh Mane">Prathamesh Mane</option>
             <option value="Shweta Giri">Shweta Giri</option>
-            {/* <option value="Aniket S. Kulkarni">Aniket S. Kulkarni</option> */}
-            {/* <option value="Aakansha Rathod">Aakansha Rathod</option> */}
+            <option value="Sheela Swamy">Sheela Swamy</option>
+            <option value="Harish Gosavi">Harish Gosavi</option>
+            <option value="Dheeraj Sharma">Dheeraj Sharma</option>
+            <option value="Rajesh Das">Rajesh Das</option>
+            <option value="Abhishek Haibatpure">Abhishek Haibatpure</option>
           </select>
 
           <input
             type="text"
-            name="firstname"
+            name="fullname"
             placeholder="First Name (Required) *"
             required
             className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 "
             onChange={handleChange}
-            value={formData.firstname}
-          />
-          <input
-            type="text"
-            name="lastname"
-            placeholder="Last Name (Required) *"
-            required
-            className="border border-gray-300 rounded px-3 py-2"
-            onChange={handleChange}
-            value={formData.lastname}
+            value={formData.fullname}
           />
 
           <input
             type="email"
             name="email"
-            placeholder="Email (Required) *"
-            required
+            placeholder="Email"
             className="border border-gray-300 rounded px-3 py-2"
             onChange={handleChange}
             value={formData.email}
@@ -452,7 +444,9 @@ const LeadForm = () => {
             onChange={handleChange}
             value={formData.territory}
           >
-            <option value="" disabled>Select Territory</option>
+            <option value="" disabled>
+              Select Territory
+            </option>
             <option value="T1 - South and West">T1 - South and West</option>
             <option value="T2 - North, East and Central">
               T2 - North, East and Central
@@ -465,7 +459,9 @@ const LeadForm = () => {
             onChange={handleChange}
             value={formData.region}
           >
-            <option value="" disabled >Select Region</option>
+            <option value="" disabled>
+              Select Region
+            </option>
             <option value="east">East</option>
             <option value="west">West</option>
             <option value="north">North</option>
@@ -522,6 +518,8 @@ const LeadForm = () => {
             </option>
             <option value="sales">Sales</option>
             <option value="support">Support</option>
+            <option value="marketing">Marketing</option>
+            <option value="other">other</option>
           </select>
 
           <select
@@ -534,10 +532,13 @@ const LeadForm = () => {
               Select Secondary Category
             </option>
             {[...Array(6)].map((_, index) => (
-              <option key={`group-${index + 1}`} value={`group ${index + 1}`}>
-                Group {index + 1}
-              </option>
+              <>
+                <option key={`group-${index + 1}`} value={`group ${index + 1}`}>
+                  Group {index + 1}
+                </option>
+              </>
             ))}
+            {<option value="other">Other</option>}
           </select>
           <select
             name="leadfor"

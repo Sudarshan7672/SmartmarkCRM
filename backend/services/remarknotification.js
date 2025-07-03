@@ -9,7 +9,7 @@ const createRemarkNotification = async ({ lead_id, remarkby }) => {
       return;
     }
 
-    const leadName = `${lead.firstname} ${lead.lastname}`;
+    const leadName = `${lead.fullname}`;
 
     const notification = new Notification({
       lead_id: lead.lead_id,

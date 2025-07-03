@@ -1,19 +1,34 @@
 import { useState } from "react";
 import {
-  FaUser,
   FaEnvelope,
   FaPhone,
+  FaWhatsapp,
   FaBuilding,
-  FaMapMarkerAlt,
+  FaUserTie,
+  FaMapMarkedAlt,
+  FaClipboardList,
+  FaGlobeAsia,
+  FaGlobeEurope,
+  FaFlag,
+  FaUserCheck,
+  FaUserFriends,
+  FaUserPlus,
+  FaClipboardCheck,
+  FaFileAlt,
+  FaTicketAlt,
+  FaShippingFast,
+  FaCalendarPlus,
+  FaCalendarCheck,
+  FaShieldAlt,
+  FaUserTag,
   FaInfoCircle,
   FaEdit,
   FaTrash,
   FaPlus,
-  FaCalendarPlus,
-  FaUserTag,
-  FaShieldAlt,
-  FaTicketAlt,
+  FaUser,
+  FaMapMarkerAlt,
   FaGlobeAmericas,
+  
 } from "react-icons/fa";
 import { toast } from "react-toastify"; // Optional for feedback
 import AddFollowUp from "../../components/Modals/AddFollowUpModal";
@@ -174,11 +189,11 @@ export default function LeadCard({
       },
       {
         icon: <FaPhone className="text-green-500" />,
-        label: "contact",
+        label: "Contact",
         value: leadData.contact || "N/A",
       },
       {
-        icon: <FaPhone className="text-green-500" />,
+        icon: <FaWhatsapp className="text-green-500" />,
         label: "WhatsApp",
         value: leadData.whatsapp || "N/A",
       },
@@ -188,32 +203,45 @@ export default function LeadCard({
         value: leadData.company || "N/A",
       },
       {
-        icon: <FaMapMarkerAlt className="text-red-500" />,
-        label: "Address",
-        value: leadData.address || "N/A",
-      },
-      {
-        icon: <FaInfoCircle className="text-blue-500" />,
-        label: "Requirements",
-        value: leadData.requirements || "N/A",
-      },
-      {
-        icon: <FaInfoCircle className="text-blue-500" />,
-        label: "territory",
-        value: leadData.territory || "N/A",
-      },
-      {
-        icon: <FaInfoCircle className="text-blue-500" />,
-        label: "Country",
-        value: leadData.country || "N/A",
-      },
-      {
-        icon: <FaInfoCircle className="text-blue-500" />,
+        icon: <FaUserTie className="text-purple-500" />,
         label: "Designation",
         value: leadData.designation || "N/A",
       },
       {
-        icon: <FaInfoCircle className="text-blue-500" />,
+        icon: <FaMapMarkedAlt className="text-red-500" />,
+        label: "Address",
+        value: leadData.address || "N/A",
+      },
+      {
+        icon: <FaClipboardList className="text-blue-500" />,
+        label: "Requirements",
+        value: leadData.requirements || "N/A",
+      },
+      {
+        icon: <FaGlobeAsia className="text-blue-500" />,
+        label: "Territory",
+        value: leadData.territory || "N/A",
+      },
+      {
+        icon: <FaGlobeEurope className="text-blue-500" />,
+        label: "Region",
+        value: leadData.region
+          ? leadData.region.charAt(0).toUpperCase() +
+            leadData.region.slice(1).toLowerCase()
+          : "N/A",
+      },
+      {
+        icon: <FaFlag className="text-blue-500" />,
+        label: "Country",
+        value: leadData.country || "N/A",
+      },
+      {
+        icon: <FaMapMarkedAlt className="text-blue-500" />,
+        label: "State",
+        value: leadData.state || "N/A",
+      },
+      {
+        icon: <FaUserCheck className="text-blue-500" />,
         label: "Is FCA",
         value:
           leadData.isfca !== undefined
@@ -223,12 +251,12 @@ export default function LeadCard({
             : "N/A",
       },
       {
-        icon: <FaInfoCircle className="text-blue-500" />,
+        icon: <FaUserFriends className="text-blue-500" />,
         label: "Referred By",
         value: leadData.referredby || "N/A",
       },
       {
-        icon: <FaInfoCircle className="text-blue-500" />,
+        icon: <FaUserPlus className="text-blue-500" />,
         label: "Referred To",
         value: leadData.referredto || "N/A",
       },
@@ -245,15 +273,18 @@ export default function LeadCard({
       {
         icon: <FaTicketAlt className="text-yellow-500" />,
         label: "IVR Ticket Code",
-        value: leadData.ivrticketcode ? leadData.ivrticketcode : "N/A",
+        value: leadData.ivrticketcode || "N/A",
       },
       {
-        icon: domIntItem.icon,
-        label: "Domestic/export",
-        value: domIntItem.value,
+        icon: <FaShippingFast className="text-blue-500" />,
+        label: "Domestic/Export",
+        value: leadData.domesticorexport
+          ? leadData.domesticorexport.charAt(0).toUpperCase() +
+            leadData.domesticorexport.slice(1).toLowerCase()
+          : "N/A",
       },
       {
-        icon: <FaInfoCircle className="text-blue-500" />,
+        icon: <FaCalendarPlus className="text-blue-500" />,
         label: "Added At",
         value: leadData.created_at
           ? new Date(leadData.created_at).toLocaleString("en-IN", {
@@ -267,7 +298,7 @@ export default function LeadCard({
           : "N/A",
       },
       {
-        icon: <FaInfoCircle className="text-blue-500" />,
+        icon: <FaCalendarCheck className="text-blue-500" />,
         label: "Last Updated At",
         value: leadData.updated_at
           ? new Date(leadData.updated_at).toLocaleString("en-IN", {
@@ -390,7 +421,7 @@ export default function LeadCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
                   <FaUser className="text-blue-500 dark:text-blue-400" />
-                  {leadData.firstname} {leadData.lastname} (
+                  {leadData.fullname}(
                   <span
                     className="cursor-pointer text-md text-blue-500 dark:text-blue-400 hover:underline"
                     onClick={() => {
@@ -403,7 +434,13 @@ export default function LeadCard({
                   )
                 </h2>
                 <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
-                  {leadData.status || "N/A"}
+                  Lead Owner - {leadData.leadowner || "N/A"}
+                </span>
+                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                  Source - {leadData.source || "N/A"}
+                </span>
+                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                  Status - {leadData.status || "N/A"}
                 </span>
                 <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
                   Department - {leadData.primarycategory || "N/A"}
@@ -411,10 +448,13 @@ export default function LeadCard({
                 <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
                   Group - {leadData.secondarycategory || "N/A"}
                 </span>
-                {leadData.ivrticketcode && 
-                <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
-                  Ticket - {leadData.isivrticketopen?"open":"closed" || "NO"}
-                </span>}
+
+                {leadData.ivrticketcode && (
+                  <span className="text-sm/2 px-1.5 py-1.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full font-medium">
+                    Ticket -{" "}
+                    {leadData.isivrticketopen ? "open" : "closed" || "NO"}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -466,7 +506,7 @@ export default function LeadCard({
         </div>
 
         {/* Section Content */}
-        <div className="bg-gray-50 dark:bg-gray-800 p-1 rounded-xl">
+        <div className="bg-gray-50 dark:bg-gray-800 p-1 rounded-xl h-[250px] overflow-scroll">
           {activeSection === SECTIONS.DETAILS
             ? renderDetails()
             : renderRemarks()}

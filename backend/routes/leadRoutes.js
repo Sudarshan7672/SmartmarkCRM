@@ -15,8 +15,7 @@ router.post("/add", async (req, res) => {
     let {
       leadowner,
       source,
-      firstname,
-      lastname,
+      fullname,
       email,
       contact,
       whatsapp,
@@ -49,14 +48,7 @@ router.post("/add", async (req, res) => {
     console.log("req.body", req.body);
 
     // Validate required fields
-    if (
-      !leadowner ||
-      !firstname ||
-      !lastname ||
-      !email ||
-      !contact ||
-      !source
-    ) {
+    if (!leadowner || !fullname || !contact || !source) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -96,7 +88,11 @@ router.post("/add", async (req, res) => {
 
     // set the isivrticketopen to true if ivrticketcode is provided
 
-    if(ivrticketcode!="" && ivrticketcode!=null && ivrticketcode!="undefined") {
+    if (
+      ivrticketcode != "" &&
+      ivrticketcode != null &&
+      ivrticketcode != "undefined"
+    ) {
       isivrticketopen = true;
     }
 
@@ -105,8 +101,7 @@ router.post("/add", async (req, res) => {
       lead_id,
       leadowner,
       source,
-      firstname,
-      lastname,
+      fullname,
       email,
       contact: contactString,
       whatsapp: whatsappString,
@@ -260,7 +255,7 @@ router.put("/update", isAuthenticated, async (req, res) => {
     if (updatedLead.status === "Converted") {
       await leadConversionNotification({
         leadId: updatedLead.lead_id,
-        leadName: `${updatedLead.firstname} ${updatedLead.lastname}`,
+        leadName: `${updatedLead.fullname}`,
         primaryCategory: updatedLead.primarycategory,
         secondaryCategory: updatedLead.secondarycategory,
       });
@@ -297,17 +292,23 @@ router.get("/get-leads", async (req, res) => {
     const user = req.user;
     let roleFilter = {};
     if (user?.role === "Support") {
-      roleFilter.primarycategory = "support";
+      roleFilter.primarycategory = { $in: ["support", "marketing", "other"] };
       if (user?.fullname === "Aakansha Rathod") {
-        roleFilter.secondarycategory = { $in: ["group 5", "group 6"] };
+        roleFilter.secondarycategory = {
+          $in: ["group 1", "group 5", "group 6"],
+        };
         roleFilter.leadowner = { $in: ["Aakansha Rathod"] };
       }
+      if(user?.fullname === "Sheela Swamy") {
+        roleFilter.secondarycategory = { $in: ["group 5"] };
+        roleFilter.leadowner = { $in: ["Sheela Swamy"] };
+      }
       if (user.fullname === "Shweta Giri") {
-      roleFilter.isivrticketopen = true;
-      roleFilter.leadowner = { $in: ["Shweta Giri"] };
-    }
+        // roleFilter.isivrticketopen = true;
+        roleFilter.leadowner = { $in: ["Shweta Giri"] };
+      }
     } else if (user?.role === "Sales") {
-      roleFilter.primarycategory = "sales";
+      roleFilter.primarycategory = { $in: ["sales", "marketing", "other"] };
       if (user?.fullname === "Prathamesh Mane") {
         roleFilter.secondarycategory = { $in: ["group 2"] };
         roleFilter.leadowner = { $in: ["Prathamesh Mane"] };
@@ -316,8 +317,24 @@ router.get("/get-leads", async (req, res) => {
         roleFilter.secondarycategory = { $in: ["group 4"] };
         roleFilter.leadowner = { $in: ["Bharat Kokatnur"] };
       }
+      if (user?.fullname === "Harish Gosavi") {
+        roleFilter.secondarycategory = { $in: ["group 4"] };
+        roleFilter.leadowner = { $in: ["Harish Gosavi"] };
+      }
+      if (user?.fullname === "Dheeraj Sharma") {
+        roleFilter.secondarycategory = { $in: ["group 4"] };
+        roleFilter.leadowner = { $in: ["Dheeraj Sharma"] };
+      }
+      if (user?.fullname === "Rajesh Das") {
+        roleFilter.secondarycategory = { $in: ["group 4"] };
+        roleFilter.leadowner = { $in: ["Rajesh Das"] };
+      }
+      if (user?.fullname === "Abhishek Haibatpure") {
+        roleFilter.secondarycategory = { $in: ["group 4"] };
+        roleFilter.leadowner = { $in: ["Abhishek Haibatpure"] };
+      }
     } else if (["CRM Manager", "Admin", "SuperAdmin"].includes(user?.role)) {
-      roleFilter.primarycategory = { $in: ["", "sales", "support"] };
+      roleFilter.primarycategory = { $in: ["", "sales", "support", "marketing", "other"] };
       if (user?.fullname === "Aniket S. Kulkarni") {
         roleFilter.source = { $in: ["chatbot"] };
       }
@@ -504,8 +521,7 @@ router.get("/search-leads", async (req, res) => {
     // Basic search conditions
     const baseConditions = {
       $or: [
-        { firstname: regex },
-        { lastname: regex },
+        { fullname: regex },
         { source: regex },
         { company: regex },
         { email: regex },
@@ -564,7 +580,7 @@ router.delete("/delete/:leadId", async (req, res) => {
     // ✅ Trigger deletion notification
     await leadDeletedNotification({
       leadId: deletedLead._id,
-      leadName: `${deletedLead.firstname} ${deletedLead.lastname}`,
+      leadName: `${deletedLead.fullname}`,
       primaryCategory: deletedLead.primarycategory,
       secondaryCategory: deletedLead.secondarycategory,
     });
@@ -573,7 +589,7 @@ router.delete("/delete/:leadId", async (req, res) => {
     await LeadDeleteLog.create({
       doc_id: deletedLead._id,
       lead_id: deletedLead?.lead_id,
-      leadName: `${deletedLead?.firstname} ${deletedLead?.lastname}`,
+      leadName: `${deletedLead?.fullname}`,
       primaryCategory: deletedLead?.primarycategory,
       secondaryCategory: deletedLead?.secondarycategory,
       deletedBy: req.user?.fullname || "unknown",

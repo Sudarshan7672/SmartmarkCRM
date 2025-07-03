@@ -28,7 +28,7 @@ const generateInactivityNotifications = async () => {
       const existing = await Notification.findOne({
         lead_id: lead.lead_id,
         type: "inactivity",
-        msg: { $regex: lead.firstname, $options: "i" }, // basic duplicate check
+        msg: { $regex: lead.fullname, $options: "i" }, // basic duplicate check
       });
 
       if (existing) continue;
@@ -39,14 +39,14 @@ const generateInactivityNotifications = async () => {
         lead.primarycategory === "" &&
         lead.secondarycategory === ""
       ) {
-        msg = `Lead ${lead.firstname} ${lead.lastname} is inactive and unassigned from past 4 days.`;
+        msg = `Lead ${lead.fullname} is inactive and unassigned from past 4 days.`;
       } else {
-        msg = `Lead ${lead.firstname} ${lead.lastname} is not updated from past 2 days.`;
+        msg = `Lead ${lead.fullname} is not updated from past 2 days.`;
       }
 
       const notification = new Notification({
         lead_id: lead.lead_id,
-        lead_name: `${lead.firstname} ${lead.lastname}`,
+        lead_name: `${lead.fullname}`,
         msg,
         type: "inactivity",
         lead_primary_category: lead.primarycategory || "",
@@ -57,7 +57,9 @@ const generateInactivityNotifications = async () => {
       console.log(`Inactivity notification saved for lead: ${lead.lead_id}`);
     }
 
-    console.log(`Inactivity notifications created for ${allLeads.length} lead(s).`);
+    console.log(
+      `Inactivity notifications created for ${allLeads.length} lead(s).`
+    );
   } catch (error) {
     console.error("Error generating inactivity notifications:", error);
   }

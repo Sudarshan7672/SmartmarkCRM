@@ -16,7 +16,188 @@ async function generateUniqueLeadId(existingIds, existingLeadIdsSet) {
   )}${String(now.getDate()).padStart(2, "0")}`;
 
   let newId;
+  do {const express = require("express");
+const multer = require("multer");
+const XLSX = require("xlsx");
+const router = express.Router();
+const Lead = require("../models/lead");
+const BulkActions = require("../models/bulkActions");
+const createBulkUploadNotification = require("../services/bulkleadnotification");
+
+const upload = multer();
+
+// Provided as-is
+async function generateUniqueLeadId(existingIds, existingLeadIdsSet) {
+  const now = new Date();
+  const prefix = `SM${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+  let newId;
   do {
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+    newId = `${prefix}${randomDigits}`;
+  } while (existingIds.has(newId) || existingLeadIdsSet.has(newId));
+  existingIds.add(newId);
+  return newId;
+}
+
+router.post("/bulk-upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet);
+
+    if (!data || data.length === 0) {
+      return res.status(400).json({ message: "Empty or invalid file" });
+    }
+
+    const requiredColumns = [
+      "leadowner",
+      "source",
+      "fullname",
+      "contact",
+      "company",
+      "territory",
+      "country",
+      "requirements",
+      "status",
+      "primarycategory",
+      "secondarycategory",
+      "leadfor",
+    ];
+
+    const actualColumns = Object.keys(data[0]);
+    const missing = requiredColumns.filter(col => !actualColumns.includes(col));
+    if (missing.length > 0) {
+      return res.status(400).json({ message: `Missing columns: ${missing.join(", ")}` });
+    }
+
+    const emailOrContactList = data
+      .map((row) => {
+        const conditions = [];
+        if (row.email?.trim()) conditions.push({ email: row.email.trim() });
+        if (row.contact?.toString().trim())
+          conditions.push({ contact: row.contact.toString().trim() });
+        return { $or: conditions };
+      })
+      .filter((cond) => cond.$or.length > 0);
+
+    const existingLeads = emailOrContactList.length > 0
+      ? await Lead.find({ $or: emailOrContactList }).lean()
+      : [];
+
+    const existingEmailSet = new Set(existingLeads.map((l) => l.email));
+    const existingContactSet = new Set(existingLeads.map((l) => l.contact));
+
+    const now = new Date();
+    const todayPrefix = `SM${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+
+    const existingLeadsToday = await Lead.find({
+      lead_id: { $regex: `^${todayPrefix}` },
+    }).select("lead_id").lean();
+    const existingLeadIdsSet = new Set(existingLeadsToday.map((l) => l.lead_id));
+    const usedIds = new Set();
+
+    const leads = [];
+    for (const row of data) {
+      const lead_id = await generateUniqueLeadId(usedIds, existingLeadIdsSet);
+      const isExisting = (row.email && existingEmailSet.has(row.email)) ||
+                         (row.contact && existingContactSet.has(row.contact));
+      const ivrticketcodeexists = row.ivrticketcode && row.ivrticketcode.trim() !== "";
+
+      leads.push({
+        lead_id,
+        leadowner: row.leadowner?.trim() || "",
+        source: row.source?.trim() || "",
+        fullname: row.fullname?.trim() || "",
+        contact: row.contact?.toString().trim() || "",
+        company: row.company?.trim() || "",
+        territory: row.territory?.trim() || "",
+        country: row.country?.trim() || "",
+        requirements: row.requirements?.trim() || "",
+        status: row.status?.trim() || "",
+        primarycategory: row.primarycategory?.trim() || "",
+        secondarycategory: row.secondarycategory?.trim() || "",
+        leadfor: row.leadfor?.trim() || "",
+        email: row.email?.trim() || "",
+        whatsapp: row.whatsapp?.trim() || "",
+        designation: row.designation?.trim() || "",
+        address: row.address?.trim() || "",
+        region: row.region?.trim() || "",
+        state: row.state?.trim() || "",
+        isfca: row.isfca?.trim() || "",
+        ivrticketcode: row.ivrticketcode?.trim() || "",
+        isivrticketopen: row.isivrticketopen?.trim() || "",
+        warrantystatus: row.warrantystatus?.trim() || "",
+        domesticorexport: row.domesticorexport?.trim() || "",
+        referredby: row.referredby?.trim() || "",
+        referrefto: row.referrefto?.trim() || "",
+        ...(isExisting ? { re_enquired: true } : {}),
+        ...(ivrticketcodeexists ? { isivrticketopen: true } : {}),
+      });
+    }
+
+    const validLeads = leads.filter((lead) =>
+      requiredColumns.every((col) => lead[col] && lead[col] !== "")
+    );
+
+    if (validLeads.length === 0) {
+      return res.status(400).json({
+        message: "No valid leads to insert (missing required fields)",
+      });
+    }
+
+    const insertedLeads = await Lead.insertMany(validLeads, { ordered: true });
+    const count = insertedLeads.length;
+    const user = req.user?.fullname || "Unknown User";
+
+    await BulkActions.create({
+      filename: req.file.originalname,
+      uploadedby: user,
+      count,
+      stage: "completed",
+    });
+
+    await createBulkUploadNotification({
+      uploadedBy: user,
+      count,
+      filename: req.file.originalname,
+    });
+
+    return res.status(200).json({
+      message: "Leads uploaded and saved successfully",
+      count,
+    });
+  } catch (err) {
+    console.error("Upload error:", err);
+    await BulkActions.create({
+      filename: req.file?.originalname || "unknown",
+      uploadedby: req.user?.fullname || "Unknown User",
+      count: 0,
+      stage: "failed",
+      error: err.message,
+    });
+
+    return res.status(500).json({
+      message: "Server error during upload",
+      error: err.message,
+    });
+  }
+});
+
+router.get("/actions", async (req, res) => {
+  try {
+    const actions = await BulkActions.find().sort({ uploadAt: -1 });
+    res.status(200).json({ actions });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch actions", error: err.message });
+  }
+});
+
+module.exports = router;
+
     const randomDigits = Math.floor(1000 + Math.random() * 9000);
     newId = `${prefix}${randomDigits}`;
   } while (existingIds.has(newId) || existingLeadIdsSet.has(newId));
@@ -46,8 +227,7 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
       "source",
       "leadfor",
       "territory",
-      "firstname",
-      "lastname",
+      "fullname",
       "contact",
     ];
     const missing = requiredColumns.filter(
@@ -106,12 +286,12 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
         row.ivrticketcode && row.ivrticketcode.trim() !== "";
       leads.push({
         lead_id,
+        leadowner: row.leadowner?.trim() || "",
         source: row.source?.trim() || "",
         leadfor: row.leadfor?.trim() || "",
         territory: row.territory?.trim() || "",
         region: row.region?.trim() || "",
-        firstname: row.firstname?.trim() || "",
-        lastname: row.lastname?.trim() || "",
+        fullname: row.fullname?.trim() || "",
         contact: row.contact?.toString().trim() || "",
         email: row.email?.trim() || "",
         company: row.company?.trim() || "",
@@ -124,8 +304,7 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
     // Filter valid leads
     const validLeads = leads.filter(
       (lead) =>
-        lead.firstname &&
-        lead.lastname &&
+        lead.fullname &&
         lead.contact &&
         lead.source &&
         lead.leadfor &&
@@ -133,11 +312,9 @@ router.post("/bulk-upload", upload.single("file"), async (req, res) => {
     );
 
     if (validLeads.length === 0) {
-      return res
-        .status(400)
-        .json({
-          message: "No valid leads to insert (missing required fields)",
-        });
+      return res.status(400).json({
+        message: "No valid leads to insert (missing required fields)",
+      });
     }
 
     // Insert leads

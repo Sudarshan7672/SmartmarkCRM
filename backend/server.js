@@ -70,8 +70,6 @@ cron.schedule("0 9-18 * * *", async () => {
 // Load environment variables
 dotenv.config();
 
-
-
 // Set port from environment variables or default to 8080
 const PORT = process.env.PORT || 8080;
 
@@ -86,9 +84,9 @@ app.use(morgan("dev")); // Log requests to the console
 // const cors = require("cors");
 const corsOptions = {
   // origin: ["http://localhost:5173", "http://localhost:5174"],
-    origin: [
+  origin: [
     "https://www.smartmark.gurubrandingservices.com",
-    "https://smartmark.gurubrandingservices.com"
+    "https://smartmark.gurubrandingservices.com",
   ],
   // Allow specific domains
   credentials: true,
@@ -120,7 +118,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      sameSite: 'None', // 'none' will work with secure: true
+      sameSite: "None", // 'none' will work with secure: true
       secure: true, // set to true if your using https
       maxAge: 1000 * 60 * 60 * 24,
     }, // 1 day

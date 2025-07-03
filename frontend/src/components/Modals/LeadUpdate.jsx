@@ -50,17 +50,17 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
   };
 
   // Validation functions
-  // firstname
-  const validateFirstName = (name) => {
+  // fullname
+  const validatefullname = (name) => {
     const nameRegex = /^[a-zA-Z\s]+$/;
     return nameRegex.test(name);
   };
 
   // lastname
-  const validateLastName = (name) => {
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    return nameRegex.test(name);
-  };
+  // const validateLastName = (name) => {
+  //   const nameRegex = /^[a-zA-Z\s]+$/;
+  //   return nameRegex.test(name);
+  // };
 
   // whatsapp
   const validateWhatsappNumber = (number) => {
@@ -76,9 +76,9 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
 
   // email
   const validateEmail = (email) => {
+    if (email.trim() === "") return true; // Accept empty
     const emailRegex =
       /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,63})@[a-zA-Z0-9-]+(?:\.[a-zA-Z]{2,})+$/;
-    // setMessage("Invalid email address");
     return emailRegex.test(email);
   };
 
@@ -131,15 +131,15 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
       return;
     }
     // Validate first name
-    if (!validateFirstName(formData.firstname)) {
+    if (!validatefullname(formData.fullname)) {
       setMessage("Invalid first name (only letters and spaces allowed)");
       return;
     }
     // Validate last name
-    if (!validateLastName(formData.lastname)) {
-      setMessage("Invalid last name (only letters and spaces allowed)");
-      return;
-    }
+    // if (!validateLastName(formData.lastname)) {
+    //   setMessage("Invalid last name (only letters and spaces allowed)");
+    //   return;
+    // }
     // Validate designation
     if (formData.designation && !validateDesignation(formData.designation)) {
       setMessage("Invalid designation (only letters and spaces allowed)");
@@ -176,12 +176,11 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
         withCredentials: true,
       });
       // alert("Lead updated successfully!");
-      
+
       onClose();
       setTimeout(() => {
         window.location.reload(); // Reload the page to reflect the updated lead
-      }
-      , 1000);
+      }, 1000);
       toast.success("Lead Updated!", {
         position: "top-right",
         autoClose: 3000,
@@ -251,12 +250,16 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               <option disabled value="">
                 Select Leadowner (Required)
               </option>
+              <option value="Aniket S. Kulkarni">Aniket S. Kulkarni</option>
               <option value="Bharat Kokatnur">Bharat Kokatnur</option>
               <option value="Aakansha Rathod">Aakansha Rathod</option>
               <option value="Prathamesh Mane">Prathamesh Mane</option>
               <option value="Shweta Giri">Shweta Giri</option>
-              {/* <option value="Aniket S. Kulkarni">Aniket S. Kulkarni</option> */}
-              {/* <option value="Aakansha Rathod">Aakansha Rathod</option> */}
+              <option value="Sheela Swamy">Sheela Swamy</option>
+              <option value="Harish Gosavi">Harish Gosavi</option>
+              <option value="Dheeraj Sharma">Dheeraj Sharma</option>
+              <option value="Rajesh Das">Rajesh Das</option>
+              <option value="Abhishek Haibatpure">Abhishek Haibatpure</option>
             </select>
           </label>
           <label className="flex flex-col font-medium">
@@ -319,22 +322,16 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
           {/* Other Fields */}
           {[
             {
-              label: "First Name (Required)",
-              name: "firstname",
+              label: "Full Name (Required)",
+              name: "fullname",
               type: "text",
               required: true,
             },
             {
-              label: "Last Name (Required)",
-              name: "lastname",
-              type: "text",
-              required: true,
-            },
-            {
-              label: "Email (Required)",
+              label: "Email ",
               name: "email",
               type: "email",
-              required: true,
+              required: false,
             },
             {
               label: "Contact (Required)",
@@ -388,6 +385,8 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               </option>
               <option value="sales">Sales</option>
               <option value="support">Support</option>
+              <option value="marketing">Marketing</option>
+              <option value="other">other</option>
             </select>
           </label>
           <label className="flex flex-col font-medium">
@@ -402,10 +401,16 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
                 Select Secondary Category
               </option>
               {[...Array(6)].map((_, index) => (
-                <option key={index} value={`group ${index + 1}`}>
-                  Group {index + 1}
-                </option>
+                <>
+                  <option
+                    key={`group-${index + 1}`}
+                    value={`group ${index + 1}`}
+                  >
+                    Group {index + 1}
+                  </option>
+                </>
               ))}
+              <option value="other">Other</option>
             </select>
           </label>
 
@@ -459,7 +464,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
           <label className="flex flex-col font-medium">
             Domestic/export
             <select
-              name="domesticandexport"
+              name="domesticorexport"
               className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
               onChange={handleChange}
               value={formData.domesticorexport}

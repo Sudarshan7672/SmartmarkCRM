@@ -15,11 +15,7 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  firstname: {
-    type: String,
-    required: true,
-  },
-  lastname: {
+  fullname: {
     type: String,
     required: true,
   },
@@ -95,7 +91,7 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: false,
     default: "",
-    enum: ["", "sales", "support"],
+    enum: ["", "sales", "support", "marketing", "other"],
   },
   secondarycategory: {
     type: String,
@@ -109,6 +105,7 @@ const leadSchema = new mongoose.Schema({
       "group 4",
       "group 5",
       "group 6",
+      "other",
     ],
   },
   isfca: {
@@ -131,7 +128,7 @@ const leadSchema = new mongoose.Schema({
     required: false,
     default: "",
   },
-  isivrticketopen:{
+  isivrticketopen: {
     type: Boolean,
     required: false,
     default: false,

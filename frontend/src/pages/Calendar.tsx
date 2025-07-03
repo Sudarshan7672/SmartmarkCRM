@@ -24,8 +24,7 @@ interface FollowUp {
 interface Lead {
   _id: string;
   name?: string;
-  firstname?: string;
-  lastname?: string;
+  fullname?: string;
   contact: string;
   email?: string;
   whatsapp?: string;
@@ -152,9 +151,12 @@ const Calendar = () => {
       // console.log("Fetching lead details for ID:", leadId);
       const resolvedLeadId = typeof leadId === "object" ? leadId._id : leadId;
       // console.log("Resolved lead ID:", resolvedLeadId);
-      const res = await axios.get(`${BACKEND_URL}/leads/followups/${resolvedLeadId}`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${BACKEND_URL}/leads/followups/${resolvedLeadId}`,
+        {
+          withCredentials: true,
+        }
+      );
       // console.log("Lead details:", res.data);
       setLeadDetails(res.data);
     } catch (err) {
@@ -299,143 +301,144 @@ const Calendar = () => {
         description="Manage your follow-ups and schedules."
       />
       <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-lg dark:shadow-black">
-   {isLoggedIn && (
-    <FullCalendar
-    ref={calendarRef}
-    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-    initialView="dayGridMonth"
-    headerToolbar={{
-      left: "prev,next",
-      center: "title",
-      right: "dayGridMonth,timeGridWeek,timeGridDay",
-    }}
-    events={followUps}
-    selectable
-    eventClick={handleFollowUpClick}
-  />
-   )}
-</div>
+        {isLoggedIn && (
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={{
+              left: "prev,next",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
+            }}
+            events={followUps}
+            selectable
+            eventClick={handleFollowUpClick}
+          />
+        )}
+      </div>
 
-<Modal isOpen={isOpen} onClose={closeModal}>
-  <div className="fixed inset-0 flex items-center justify-center z-50">
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-6 md:p-8 transition-all duration-300">
-      <h2 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white text-center">
-        {selectedFollowUp ? "Edit Follow-Up" : "Add Follow-Up"}
-      </h2>
-      <p className="mb-6 text-sm text-gray-500 dark:text-gray-300 text-center">
-        {selectedFollowUp
-          ? "Modify the follow-up details."
-          : "Fill out the form to add a new follow-up."}
-      </p>
-
-      {leadDetails && (
-        <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Lead Info</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Name: {leadDetails.firstname} {leadDetails.lastname}
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Lead ID: {leadDetails.lead_id}
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Contact: {leadDetails.contact}
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Email: {leadDetails.email}
-          </p>
-          {leadDetails.whatsapp && (
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Whatsapp: {leadDetails.whatsapp}
+      <Modal isOpen={isOpen} onClose={closeModal}>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-auto p-6 md:p-8 transition-all duration-300">
+            <h2 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white text-center">
+              {selectedFollowUp ? "Edit Follow-Up" : "Add Follow-Up"}
+            </h2>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-300 text-center">
+              {selectedFollowUp
+                ? "Modify the follow-up details."
+                : "Fill out the form to add a new follow-up."}
             </p>
-          )}
+
+            {leadDetails && (
+              <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Lead Info
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Name: {leadDetails.fullname}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Lead ID: {leadDetails.lead_id}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Contact: {leadDetails.contact}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Email: {leadDetails.email}
+                </p>
+                {leadDetails.whatsapp && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Whatsapp: {leadDetails.whatsapp}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Call after demo"
+                  value={followUpTitle}
+                  onChange={(e) => setFollowUpTitle(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Follow-Up Date
+                </label>
+                <DatePicker
+                  selected={followUpDate}
+                  onChange={(date: Date | null) => setFollowUpDate(date)}
+                  minDate={new Date()}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  dateFormat="yyyy-MM-dd"
+                  placeholderText="Select date"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Status
+                </label>
+                <select
+                  value={followUpStatus}
+                  onChange={(e) => setFollowUpStatus(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Rescheduled">Rescheduled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Notes
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Additional notes or context..."
+                  value={followUpNotes}
+                  onChange={(e) => setFollowUpNotes(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="flex justify-end items-center space-x-3 mt-8">
+              {user.can_delete_followup && selectedFollowUp && (
+                <button
+                  onClick={confirmDeleteFollowUp}
+                  className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg shadow"
+                >
+                  Delete
+                </button>
+              )}
+              <button
+                onClick={closeModal}
+                className="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow"
+              >
+                Cancel
+              </button>
+              {user.can_edit_followup && (
+                <button
+                  onClick={handleAddOrUpdateFollowUp}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow"
+                >
+                  {selectedFollowUp ? "Update" : "Add"}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      )}
-
-      <div className="space-y-4">
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Title
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. Call after demo"
-            value={followUpTitle}
-            onChange={(e) => setFollowUpTitle(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Follow-Up Date
-          </label>
-          <DatePicker
-            selected={followUpDate}
-            onChange={(date: Date | null) => setFollowUpDate(date)}
-            minDate={new Date()}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            dateFormat="yyyy-MM-dd"
-            placeholderText="Select date"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Status
-          </label>
-          <select
-            value={followUpStatus}
-            onChange={(e) => setFollowUpStatus(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-            <option value="Rescheduled">Rescheduled</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Notes
-          </label>
-          <textarea
-            rows={3}
-            placeholder="Additional notes or context..."
-            value={followUpNotes}
-            onChange={(e) => setFollowUpNotes(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          ></textarea>
-        </div>
-      </div>
-
-      <div className="flex justify-end items-center space-x-3 mt-8">
-        {user.can_delete_followup && selectedFollowUp && (
-          <button
-            onClick={confirmDeleteFollowUp}
-            className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg shadow"
-          >
-            Delete
-          </button>
-        )}
-        <button
-          onClick={closeModal}
-          className="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg shadow"
-        >
-          Cancel
-        </button>
-        {user.can_edit_followup && (
-          <button
-            onClick={handleAddOrUpdateFollowUp}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow"
-          >
-            {selectedFollowUp ? "Update" : "Add"}
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-</Modal>
-
+      </Modal>
 
       {confirmModalOpen && (
         <ConfirmModal

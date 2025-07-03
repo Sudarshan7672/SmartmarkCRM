@@ -63,14 +63,12 @@ const TableCell: React.FC<TableCellProps> = ({
 
 interface Lead {
   id: string;
-  firstname: string;
-  lastname: string;
+  fullname: string;
   email: string;
   source: string;
   status: "Converted" | "Pending" | "Lost";
   created_at: string;
 }
-
 
 export { Table, TableHeader, TableBody, TableRow, TableCell };
 export type { Lead };

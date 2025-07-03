@@ -1,6 +1,9 @@
 const Notification = require("../models/notification");
 
-const sendLeadAssignmentNotification = async (lead, previousPrimaryCategory) => {
+const sendLeadAssignmentNotification = async (
+  lead,
+  previousPrimaryCategory
+) => {
   try {
     const assignedNow =
       lead.primarycategory &&
@@ -8,11 +11,11 @@ const sendLeadAssignmentNotification = async (lead, previousPrimaryCategory) => 
 
     if (!assignedNow) return;
 
-    const msg = `Lead ${lead.firstname} ${lead.lastname} (${lead.lead_id}) has been assigned to ${lead.primarycategory}.`;
+    const msg = `Lead ${lead.fullname} (${lead.lead_id}) has been assigned to ${lead.primarycategory}.`;
 
     const notification = new Notification({
       lead_id: lead.lead_id,
-      lead_name: `${lead.firstname} ${lead.lastname}`,
+      lead_name: `${lead.fullname}`,
       msg,
       type: "lead_assigned",
       lead_primary_category: lead.primarycategory || "",
@@ -21,7 +24,10 @@ const sendLeadAssignmentNotification = async (lead, previousPrimaryCategory) => 
 
     await notification.save();
   } catch (err) {
-    console.error("Failed to create lead assignment notification:", err.message);
+    console.error(
+      "Failed to create lead assignment notification:",
+      err.message
+    );
   }
 };
 

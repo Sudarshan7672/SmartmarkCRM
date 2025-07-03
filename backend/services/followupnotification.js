@@ -7,7 +7,7 @@ const generateFollowUpNotifications = async () => {
     const now = new Date();
     const today = new Date(now.setHours(0, 0, 0, 0));
     const tomorrow = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000);
-    console.log("tomorrow:", tomorrow); 
+    console.log("tomorrow:", tomorrow);
 
     // Working hours check (9 AM to 6 PM)
     const currentHour = new Date().getHours();
@@ -19,7 +19,7 @@ const generateFollowUpNotifications = async () => {
     // Fetch follow-ups that are pending and either missed or upcoming (today/tomorrow)
     const followups = await FollowUp.find({
       status: "Pending",
-      followUpDate: { $lte: tomorrow }
+      followUpDate: { $lte: tomorrow },
     });
     console.log("Follow-ups fetched:", followups.length);
 
@@ -37,21 +37,21 @@ const generateFollowUpNotifications = async () => {
       await Notification.deleteMany({
         type: { $in: ["followup_reminder", "missed_followup"] },
         lead_id: lead._id,
-        "msg": new RegExp(followup.title, "i")
+        msg: new RegExp(followup.title, "i"),
       });
 
       const type = isMissed ? "missed_followup" : "followup_reminder";
       const whenText = isMissed ? "missed" : "has an upcoming";
 
-      const msg = `Lead ${lead.firstname} ${lead.lastname} (${lead.lead_id}) ${whenText} follow-up: "${followup.title}".`;
+      const msg = `Lead ${lead.fullname} (${lead.lead_id}) ${whenText} follow-up: "${followup.title}".`;
 
       const notification = new Notification({
         lead_id: lead._id,
-        lead_name: `${lead.firstname} ${lead.lastname}`,
+        lead_name: `${lead.fullname}`,
         msg,
         type,
         lead_primary_category: lead.primarycategory || "",
-        lead_secondary_category: lead.secondarycategory || ""
+        lead_secondary_category: lead.secondarycategory || "",
       });
 
       await notification.save();

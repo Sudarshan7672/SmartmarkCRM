@@ -76,12 +76,18 @@ const BulkUploadManager = () => {
   const [isloading, setIsLoading] = useState(false);
 
   const requiredColumns = [
+    "leadowner",
     "source",
-    "leadfor",
-    "territory",
-    "firstname",
-    "lastname",
+    "fullname",
     "contact",
+    "company",
+    "territory",
+    "country",
+    "requirements",
+    "status",
+    "primarycategory",
+    "secondarycategory",
+    "leadfor",
   ];
 
   const validSources = [
@@ -95,93 +101,157 @@ const BulkUploadManager = () => {
     "referral",
     "other",
   ];
-  
+
   const validTerritories = [
     "T1 - South and West",
     "T2 - North, East and Central",
-  ]
-
-  const validregions = [
-    "east",
-    "west",
-    "north",
-    "south",
-    "central",
   ];
+
+  const validregions = ["east", "west", "north", "south", "central"];
+
+  const validLeadOwners = [
+    "Aniket S. Kulkarni",
+    "Bharat Kokatnur",
+    "Aakansha Rathod",
+    "Prathamesh Mane",
+    "Shweta Giri",
+    "Sheela Swamy",
+    "Harish Gosavi",
+    "Dheeraj Sharma",
+    "Rajesh Das",
+    "Abhishek Haibatpure",
+  ]; // Example
+  const validStatuses = [
+    "New",
+    "Not-Connected",
+    "Hot",
+    "Cold",
+    "Re-enquired",
+    "Follow-up",
+    "Converted",
+    "Transferred-to-Dealer",
+  ];
+  const validPrimaryCategories = ["", "sales", "support", "marketing", "other"];
+  const validSecondaryCategories = [
+    "",
+    "group 1",
+    "group 2",
+    "group 3",
+    "group 4",
+    "group 5",
+    "group 6",
+    "other",
+  ];
+  const validLeadFor = ["dotpeen", "laser", "other"];
+  const validRegions = ["east", "west", "north", "south", "central"];
+  const validWarrantyStatus = [
+    "",
+    "underwarranty",
+    "notunderwarranty",
+    "underamc",
+  ];
+  const validDomesticOrExport = ["", "domestic", "export"];
 
   const handleTemplateDownload = () => {
     const templateUrl = `/format.${fileType}`;
     window.location.href = templateUrl;
   };
 
-const handleFileChange = (e) => {
-  const selectedFile = e.target.files[0];
-  if (!selectedFile) return;
-  setFile(selectedFile);
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+    setFile(selectedFile);
 
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const workbook = XLSX.read(evt.target.result, { type: "array" });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const workbook = XLSX.read(evt.target.result, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const [rawHeaders, ...rows] = raw;
 
-    const raw = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    const [rawHeaders, ...rows] = raw;
-
-    // Normalize headers
-    const headers = rawHeaders.map((h) =>
-      h?.toString().trim().toLowerCase().replace(/[\s/]+/g, "")
-    );
-
-    // Convert rows to objects
-    const data = rows
-      .map((row) =>
-        Object.fromEntries(
-          headers.map((key, i) => [key, row[i]?.toString().trim() || ""])
-        )
-      )
-      .filter((row) => Object.values(row).some((val) => val !== ""));
-
-    const missingColumns = requiredColumns.filter((col) => !headers.includes(col));
-
-    if (missingColumns.length > 0) {
-      setError(`Missing required columns: ${missingColumns.join(", ")}`);
-      setPreviewData([]);
-      setValidData(false);
-      setFile(null);
-      return;
-    }
-
-    // Validate row content
-    const invalidRows = data.filter(
-      (row) =>
-        !row.firstname ||
-        !row.lastname ||
-        !row.source ||
-        !row.leadfor ||
-        !row.territory ||
-        !row.contact ||
-        !validSources.includes(row.source.toLowerCase())
-        || !validTerritories.includes(row.territory)
-    );
-
-    if (invalidRows.length > 0) {
-      // console.log("Invalid rows:", invalidRows);
-      setError(
-        "Some rows are missing required fields or have invalid source values. Valid sources are: api lead, chatbot, meta ad, ivr, expo, sales team, walk-in, referral, other."
+      // Normalize headers
+      const headers = rawHeaders.map((h) =>
+        h
+          ?.toString()
+          .trim()
+          .toLowerCase()
+          .replace(/[\s/]+/g, "")
       );
-      setPreviewData([]);
-      setValidData(false);
-      setFile(null);
-    } else {
-      setError("");
-      setPreviewData(data);
-      setValidData(true);
-      setStep(2);
-    }
-  };
-  reader.readAsArrayBuffer(selectedFile);
-};
 
+      // Convert rows to objects
+      const data = rows
+        .map((row) =>
+          Object.fromEntries(
+            headers.map((key, i) => [key, row[i]?.toString().trim() || ""])
+          )
+        )
+        .filter((row) => Object.values(row).some((val) => val !== ""));
+
+      const missingColumns = requiredColumns.filter(
+        (col) => !headers.includes(col)
+      );
+
+      if (missingColumns.length > 0) {
+        setError(`❌ Missing required columns: ${missingColumns.join(", ")}`);
+        setPreviewData([]);
+        setValidData(false);
+        setFile(null);
+        return;
+      }
+
+      const invalidDetails = [];
+
+      const invalidRows = data.filter((row, index) => {
+        const rowErrors = [];
+
+        requiredColumns.forEach((col) => {
+          if (!row[col]) rowErrors.push(`${col} is missing`);
+        });
+
+        if (!validLeadOwners.includes(row.leadowner))
+          rowErrors.push("Invalid leadowner");
+        if (!validSources.includes(row.source))
+          rowErrors.push("Invalid source");
+        if (!validTerritories.includes(row.territory))
+          rowErrors.push("Invalid territory");
+        if (!validStatuses.includes(row.status))
+          rowErrors.push("Invalid status");
+        if (!validPrimaryCategories.includes(row.primarycategory))
+          rowErrors.push("Invalid primarycategory");
+        if (!validSecondaryCategories.includes(row.secondarycategory))
+          rowErrors.push("Invalid secondarycategory");
+        if (!validLeadFor.includes(row.leadfor))
+          rowErrors.push("Invalid leadfor");
+        if (row.region && !validRegions.includes(row.region))
+          rowErrors.push("Invalid region");
+
+        if (rowErrors.length > 0) {
+          invalidDetails.push({ row: index + 2, issues: rowErrors });
+          return true;
+        }
+
+        return false;
+      });
+
+      if (invalidRows.length > 0) {
+        const detailedMsg = invalidDetails
+          .map((item) => `Row ${item.row}: ${item.issues.join(", ")}`)
+          .join("\n");
+
+        setError(`❌ Validation errors:\n\n${detailedMsg}`);
+        setPreviewData([]);
+        setValidData(false);
+        setFile(null);
+      } else {
+        setError("");
+        setPreviewData(data);
+        setValidData(true);
+        setStep(2);
+      }
+    };
+
+    reader.readAsArrayBuffer(selectedFile);
+  };
 
   const handleUpload = async () => {
     if (!validData || !file) {
@@ -253,10 +323,60 @@ const handleFileChange = (e) => {
 
         {step === 0 && (
           <div className="text-gray-700 dark:text-gray-200">
-            <p className="mb-4">
-              Download a dummy template with required fields (e.g., Name,
-              Contact).
+            <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
+              Download a dummy template with all required fields. The following
+              fields are
+              <strong> mandatory</strong> and must contain valid values:
+              <ul className="list-disc ml-6 mt-2 space-y-1">
+                <li>
+                  <strong>leadowner</strong> – One of: Aniket S. Kulkarni,
+                  Bharat Kokatnur, Aakansha Rathod, Prathamesh Mane, Shweta
+                  Giri, Sheela Swamy, Harish Gosavi, Dheeraj Sharma, Rajesh Das,
+                  Abhishek Haibatpure
+                </li>
+                <li>
+                  <strong>source</strong> – One of: api lead, chatbot, meta ad,
+                  ivr, expo, sales team, walk-in, referral, other
+                </li>
+                <li>
+                  <strong>fullname</strong> – Full name of the lead
+                </li>
+                <li>
+                  <strong>contact</strong> – Mobile number (numeric, valid
+                  format)
+                </li>
+                <li>
+                  <strong>company</strong> – Lead's company or organization
+                </li>
+                <li>
+                  <strong>territory</strong> – One of: T1 - South and West, T2 -
+                  North, East and Central
+                </li>
+                <li>
+                  <strong>country</strong> – Country name
+                </li>
+                <li>
+                  <strong>requirements</strong> – Brief description of the
+                  requirement
+                </li>
+                <li>
+                  <strong>status</strong> – One of: New, Not-Connected, Hot,
+                  Cold, Re-enquired, Follow-up, Converted, Transferred-to-Dealer
+                </li>
+                <li>
+                  <strong>primarycategory</strong> – One of: "", sales, support,
+                  marketing, other
+                </li>
+                <li>
+                  <strong>secondarycategory</strong> – One of: "", group 1,
+                  group 2, group 3, group 4, group 5, group 6, other
+                </li>
+                <li>
+                  <strong>leadfor</strong> – One of: dotpeen, laser, other
+                </li>
+              </ul>
             </p>
+
             <div className="flex items-center gap-3">
               <select
                 value={fileType}
@@ -264,7 +384,7 @@ const handleFileChange = (e) => {
                 className="border dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-2 rounded"
               >
                 <option value="xlsx">Excel</option>
-                <option value="csv">CSV</option>
+                {/* <option value="csv">CSV</option> */}
               </select>
               <button
                 onClick={handleTemplateDownload}
@@ -296,7 +416,12 @@ const handleFileChange = (e) => {
               accept=".xlsx,.xls,.csv"
               className="mb-4 border dark:border-gray-600 p-2 rounded w-full bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
             />
-            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+            {error && (
+              <pre className="bg-red-100 text-red-700 text-sm p-3 rounded overflow-auto max-h-60 whitespace-pre-wrap">
+                {error}
+              </pre>
+            )}
+
             <button
               onClick={() => setStep(0)}
               className="mr-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
