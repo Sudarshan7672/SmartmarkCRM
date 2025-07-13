@@ -23,6 +23,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
   const [leadowner, setLeadOwner] = useState("");
   const [source, setSource] = useState("");
   const [untouchedLeads, setUntouchedLeads] = useState(false);
+  const [unassignedLeads, setUnassignedLeads] = useState(false);
   const [createdDateFrom, setCreatedDateFrom] = useState("");
   const [createdDateTo, setCreatedDateTo] = useState("");
   const [updatedDateFrom, setUpdatedDateFrom] = useState("");
@@ -45,6 +46,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
       setLeadOwner(filters.leadOwner || "");
       setSource(filters.source || "");
       setUntouchedLeads(filters.untouchedLeads || false);
+      setUnassignedLeads(filters.unassignedLeads || false);
       setCreatedDateFrom(filters.createdDateFrom || "");
       setCreatedDateTo(filters.createdDateTo || "");
       setUpdatedDateFrom(filters.updatedDateFrom || "");
@@ -81,6 +83,25 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
       leadowner,
       source,
       untouchedLeads,
+      unassignedLeads,
+      createdDateFrom,
+      createdDateTo,
+      updatedDateFrom,
+      updatedDateTo,
+      reenquiredDateFrom,
+      reenquiredDateTo,
+      leadAgeFrom,
+      leadAgeTo,
+      recentCountFrom,
+      recentCountTo,
+    });
+    console.log("Filters applied:", {
+      primarycategory,
+      secondarycategory,
+      leadowner,
+      source,
+      untouchedLeads,
+      unassignedLeads,
       createdDateFrom,
       createdDateTo,
       updatedDateFrom,
@@ -102,6 +123,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
     setLeadOwner("");
     setSource("");
     setUntouchedLeads(false);
+    setUnassignedLeads(false);
     setCreatedDateFrom("");
     setCreatedDateTo("");
     setUpdatedDateFrom("");
@@ -163,6 +185,14 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
                     sx={{ color: "#4f46e5" }}
                   />
                   <span>Untouched Leads</span>
+                </label>
+                <label className="flex items-center space-x-2 font-medium text-gray-800 dark:text-gray-200">
+                  <Checkbox
+                    checked={unassignedLeads}
+                    onChange={(e) => setUnassignedLeads(e.target.checked)}
+                    sx={{ color: "#4f46e5" }}
+                  />
+                  <span>Unassigned Leads</span>
                 </label>
               </div>
 
