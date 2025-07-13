@@ -373,6 +373,10 @@ router.get("/get-leads", async (req, res) => {
       };
     }
 
+    if(parsedFilters.unassignedLeads === true) {
+      query.leadowner = { $exists: false };
+    }
+
     // Date filters
     if (parsedFilters.createdDateFrom?.trim()) {
       query.created_at = query.created_at || {};

@@ -88,7 +88,7 @@ const corsOptions = {
     "https://www.smartmark.gurubrandingservices.com",
     "https://smartmark.gurubrandingservices.com",
   ],
-  // Allow specific domains
+  // // Allow specific domains
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization", "Origin", "Accept"],

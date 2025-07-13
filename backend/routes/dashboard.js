@@ -16,7 +16,7 @@ router.get("/lead-metrics", async (req, res) => {
     const transferred = await Lead.countDocuments({
       status: "Transferred-to-Dealer",
     });
-    const unassigned = await Lead.countDocuments({ primarycategory: "" });
+    const unassigned = await Lead.countDocuments({ leadowner: "" });
 
     res.status(200).json({
       total,
