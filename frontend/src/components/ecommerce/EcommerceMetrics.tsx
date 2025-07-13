@@ -29,6 +29,7 @@ type Metrics = {
   converted: number;
   transferred: number;
   unassigned: number;
+  followUp: number;
 };
 
 export default function EcommerceMetrics() {
@@ -57,6 +58,7 @@ export default function EcommerceMetrics() {
     { label: "Hot Leads", value: metrics.hot, icon: Flame },
     { label: "Cold Leads", value: metrics.cold, icon: Snowflake },
     { label: "Re-Enquired", value: metrics.reEnquired, icon: RotateCcw },
+    { label: "Follow Up", value: metrics.followUp, icon: RotateCcw },
     { label: "Converted", value: metrics.converted, icon: CheckCircle },
     { label: "Transferred to Dealers", value: metrics.transferred, icon: Share },
     { label: "Unassigned Leads", value: metrics.unassigned, icon: UserX },

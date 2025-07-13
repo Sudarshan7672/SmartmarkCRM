@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Lead = require("../models/lead"); // Adjust path if needed
+const FollowUp = require("../models/FollowUp");
 
 // GET /api/v1/dashboard/lead-metrics
 router.get("/lead-metrics", async (req, res) => {
@@ -13,6 +14,7 @@ router.get("/lead-metrics", async (req, res) => {
     const cold = await Lead.countDocuments({ status: "Cold" });
     const reEnquired = await Lead.countDocuments({ status: "Re-enquired" });
     const converted = await Lead.countDocuments({ status: "Converted" });
+    const followUp = await Lead.countDocuments({ status: "Follow-up" });
     const transferred = await Lead.countDocuments({
       status: "Transferred-to-Dealer",
     });
@@ -34,6 +36,7 @@ router.get("/lead-metrics", async (req, res) => {
       reEnquired,
       converted,
       transferred,
+      followUp,
       unassigned,
     });
   } catch (error) {
