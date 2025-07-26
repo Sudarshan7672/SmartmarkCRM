@@ -299,7 +299,7 @@ router.get("/get-leads", async (req, res) => {
         };
         roleFilter.leadowner = { $in: ["Aakansha Rathod"] };
       }
-      if(user?.fullname === "Sheela Swamy") {
+      if (user?.fullname === "Sheela Swamy") {
         roleFilter.secondarycategory = { $in: ["group 5"] };
         roleFilter.leadowner = { $in: ["Sheela Swamy"] };
       }
@@ -334,7 +334,9 @@ router.get("/get-leads", async (req, res) => {
         roleFilter.leadowner = { $in: ["Abhishek Haibatpure"] };
       }
     } else if (["CRM Manager", "Admin", "SuperAdmin"].includes(user?.role)) {
-      roleFilter.primarycategory = { $in: ["", "sales", "support", "marketing", "other"] };
+      roleFilter.primarycategory = {
+        $in: ["", "sales", "support", "marketing", "other"],
+      };
       if (user?.fullname === "Aniket S. Kulkarni") {
         roleFilter.source = { $in: ["chatbot"] };
       }
@@ -373,7 +375,7 @@ router.get("/get-leads", async (req, res) => {
       };
     }
 
-    if(parsedFilters.unassignedLeads === true) {
+    if (parsedFilters.unassignedLeads === true) {
       query.leadowner = { $exists: false };
     }
 
@@ -468,25 +470,31 @@ router.get("/get-leads", async (req, res) => {
     // Compute status counts on slicedLeads if slicing applied, else on allLeads
     const leadsForStatusCount = slicedLeads;
 
-    const statusCounts = {
-      New: 0,
-      "Not-Connected": 0,
-      Hot: 0,
-      Cold: 0,
-      "Re-enquired": 0,
-      "Follow-up": 0,
-      Converted: 0,
-      "Transferred-to-Dealer": 0,
-    };
+const statusCounts = {
+  New: 0,
+  "Not-Connected": 0,
+  Hot: 0,
+  Cold: 0,
+  Closed: 0,
+  "Re-enquired": 0,
+  "Follow-up": 0,
+  Converted: 0,
+  "Transferred-to-Dealer": 0,
+};
 
-    for (const lead of leadsForStatusCount) {
-      const statusKey = lead.re_enquired
-        ? "Re-enquired"
-        : lead.status || "Unknown";
-      if (statusCounts.hasOwnProperty(statusKey)) {
-        statusCounts[statusKey]++;
-      }
-    }
+// Count actual status and re-enquired separately
+for (const lead of leadsForStatusCount) {
+  if (lead.status && statusCounts.hasOwnProperty(lead.status)) {
+    statusCounts[lead.status]++;
+  }
+  if (lead.re_enquired && statusCounts.hasOwnProperty("Re-enquired")) {
+    statusCounts["Re-enquired"]++;
+  }
+}
+
+// Add total count of all leads
+statusCounts.All = leadsForStatusCount.length;
+
 
     // Paginate sliced leads
     const paginatedLeads = slicedLeads.slice(skip, skip + limitNum);

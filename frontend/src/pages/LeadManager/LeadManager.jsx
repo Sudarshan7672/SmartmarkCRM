@@ -254,6 +254,7 @@ const LeadManager = () => {
     "Not-Connected",
     "Hot",
     "Cold",
+    "Closed",
     "Re-enquired",
     "Follow-up",
     "Converted",
@@ -269,37 +270,24 @@ const LeadManager = () => {
       <div className="p-4">
         <div className="flex space-x-2 mb-4 overflow-x-auto scrollbar-hide">
           {statuses.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatus(s)}
-              className={`px-2 text-sm rounded-lg border ${
-                status === s
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-blue-500 border-blue-500"
-              } transition-all whitespace-nowrap`}
-            >
-              {s}
-              {(() => {
-                if (s === "All") {
-                  const total = Object.values(statusCounts).reduce(
-                    (acc, val) => acc + val,
-                    0
-                  );
-                  return total > 0 ? (
-                    <span className="ml-1 text-sm font-semibold">
-                      ({total})
-                    </span>
-                  ) : null;
-                } else {
-                  return statusCounts[s] ? (
-                    <span className="ml-1 text-sm font-semibold">
-                      ({statusCounts[s]})
-                    </span>
-                  ) : null;
-                }
-              })()}
-            </button>
-          ))}
+  <button
+    key={s}
+    onClick={() => setStatus(s)}
+    className={`px-2 text-sm rounded-lg border ${
+      status === s
+        ? "bg-blue-500 text-white"
+        : "bg-white text-blue-500 border-blue-500"
+    } transition-all whitespace-nowrap`}
+  >
+    {s}
+    {statusCounts[s] > 0 ? (
+      <span className="ml-1 text-sm font-semibold">
+        ({statusCounts[s]})
+      </span>
+    ) : null}
+  </button>
+))}
+
           {/* filter button */}
           <button
             onClick={() => setIsFilterModalOpen(true)}

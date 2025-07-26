@@ -440,6 +440,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
                 "Not-Connected",
                 "Hot",
                 "Cold",
+                "Closed",
                 "Re-enquired",
                 "Follow-up",
                 "Converted",

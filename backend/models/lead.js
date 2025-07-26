@@ -81,6 +81,7 @@ const leadSchema = new mongoose.Schema({
       "Not-Connected",
       "Hot",
       "Cold",
+      "Closed",
       "Re-enquired",
       "Follow-up",
       "Converted",
