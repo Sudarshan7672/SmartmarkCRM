@@ -214,6 +214,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
               >
                 <MenuItem value="sales">Sales</MenuItem>
                 <MenuItem value="support">Support</MenuItem>
+                <MenuItem value="">Unassigned</MenuItem>
               </TextField>
 
               <TextField
@@ -238,6 +239,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
                 <MenuItem value="group 4">Group 4</MenuItem>
                 <MenuItem value="group 5">Group 5</MenuItem>
                 <MenuItem value="group 6">Group 6</MenuItem>
+                <MenuItem value="">Unassigned</MenuItem>
               </TextField>
 
               <TextField
