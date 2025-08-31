@@ -77,7 +77,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
   }, []);
 
   const handleApplyFilters = () => {
-    setFilters({
+    const filterData = {
       primarycategory,
       secondarycategory,
       leadowner,
@@ -94,25 +94,16 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
       leadAgeTo,
       recentCountFrom,
       recentCountTo,
-    });
-    console.log("Filters applied:", {
-      primarycategory,
-      secondarycategory,
-      leadowner,
-      source,
-      untouchedLeads,
-      unassignedLeads,
-      createdDateFrom,
-      createdDateTo,
-      updatedDateFrom,
-      updatedDateTo,
-      reenquiredDateFrom,
-      reenquiredDateTo,
-      leadAgeFrom,
-      leadAgeTo,
-      recentCountFrom,
-      recentCountTo,
-    });
+    };
+
+    console.log("Filter data being sent:", filterData);
+    console.log("Primary category value:", primarycategory);
+
+    setFilters(filterData);
+
+    // Save to localStorage
+    localStorage.setItem("leadFilters", JSON.stringify(filterData));
+
     onClose();
   };
 
@@ -202,7 +193,10 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
                 fullWidth
                 size="small"
                 value={primarycategory}
-                onChange={(e) => setprimarycategory(e.target.value)}
+                onChange={(e) => {
+                  console.log("Primary category selected:", e.target.value);
+                  setprimarycategory(e.target.value);
+                }}
                 slotProps={{
                   inputLabel: {
                     sx: {
