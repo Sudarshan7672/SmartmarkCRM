@@ -10,11 +10,6 @@ const { isAuthenticated } = require("../passportconfig");
 const LeadDeleteLog = require("../models/leaddeletelog"); // Adjust path based on your project structure
 const { logLeadTransfer } = require("../services/transferLogsService");
 
-// Helper function to add isdeleted: false to all queries
-function addDeletedFilter(query = {}) {
-  return { ...query, isdeleted: false };
-}
-
 router.post("/add", async (req, res) => {
   try {
     let {
@@ -68,15 +63,13 @@ router.post("/add", async (req, res) => {
     }
 
     // Check if a lead with the same email, contact, or company exists
-    const existingLead = await Lead.findOne(
-      addDeletedFilter({
-        $or: [
-          email ? { email } : null,
-          contactString ? { contact: contactString } : null,
-          whatsappString ? { whatsapp: whatsappString } : null,
-        ].filter(Boolean),
-      })
-    );
+    const existingLead = await Lead.findOne({
+      $or: [
+        email ? { email } : null,
+        contactString ? { contact: contactString } : null,
+        whatsappString ? { whatsapp: whatsappString } : null,
+      ].filter(Boolean),
+    });
 
     let re_enquired = !!existingLead;
 
@@ -88,7 +81,7 @@ router.post("/add", async (req, res) => {
     const randomDigits = Math.floor(100 + Math.random() * 900);
     const lead_id = `SM${year}${month}${day}${randomDigits}`;
 
-    const existingLeadId = await Lead.findOne(addDeletedFilter({ lead_id }));
+    const existingLeadId = await Lead.findOne({ lead_id });
     if (existingLeadId) {
       return res.status(500).json({ error: "Lead ID conflict, please retry" });
     }
@@ -172,7 +165,7 @@ router.put("/update", isAuthenticated, async (req, res) => {
 
     // Fetch existing lead
     const existingLead = await Lead.findById(_id);
-    if (!existingLead || existingLead.isdeleted) {
+    if (!existingLead) {
       return res.status(404).json({ message: "Lead not found" });
     }
     const existingLeadOwner = existingLead.leadowner;
@@ -397,17 +390,9 @@ router.get("/get-leads", async (req, res) => {
     }
 
     if (parsedFilters.untouchedLeads === true) {
-      query.$or = [
-        {
-          $expr: {
-            $lte: [
-              { $abs: { $subtract: ["$created_at", "$updated_at"] } },
-              10000,
-            ],
-          },
-        },
-        { untouched: true },
-      ];
+      query.$expr = {
+        $lte: [{ $abs: { $subtract: ["$created_at", "$updated_at"] } }, 10000],
+      };
     }
 
     if (parsedFilters.unassignedLeads === true) {

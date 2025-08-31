@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import BACKEND_URL from "../../configs/constants";
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
 import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
 import StatisticsChart from "../../components/ecommerce/StatisticsChart";
@@ -11,9 +9,6 @@ import PageMeta from "../../components/common/PageMeta";
 import CategorySummaryTable from "../../components/ecommerce/CategorySummaryTable";
 import ChannelSourceConversionTable from "../../components/ecommerce/ChannelSourceConversionTable";
 import LeadBifurcation from "../../components/ecommerce/LeadBifurcation";
-import PrimaryCategoryBifurcation from "../../components/ecommerce/PrimaryCategoryBifurcation";
-import SecondaryCategoryBifurcation from "../../components/ecommerce/SecondaryCategoryBifurcation";
-import MonthlyConversionRatios from "../../components/ecommerce/MonthlyConversionRatios";
 import GenerateReport from "../../components/ecommerce/GenerateReport";
 import { useNavigate } from "react-router-dom";
 import {
@@ -94,53 +89,6 @@ function RoleBasedAnalytics({
   user: User;
   selectedUserId: string;
 }) {
-  const [realTimeMetrics, setRealTimeMetrics] = useState<{
-    totalLeads: number;
-    convertedLeads: number;
-    conversionRate: number;
-  } | null>(null);
-
-  // Fetch real-time user-specific metrics
-  useEffect(() => {
-    const fetchRealTimeMetrics = async () => {
-      try {
-        const params = new URLSearchParams();
-        if (
-          selectedUserId &&
-          selectedUserId !== "" &&
-          selectedUserId !== "all"
-        ) {
-          params.append("userId", selectedUserId);
-        }
-
-        const response = await axios.get(
-          `${BACKEND_URL}/dashboard/lead-metrics?${params.toString()}`,
-          { withCredentials: true }
-        );
-
-        const metrics = response.data;
-        const conversionRate =
-          metrics.total > 0
-            ? parseFloat(((metrics.converted / metrics.total) * 100).toFixed(1))
-            : 0;
-
-        setRealTimeMetrics({
-          totalLeads: metrics.total,
-          convertedLeads: metrics.converted,
-          conversionRate: conversionRate,
-        });
-      } catch (error) {
-        console.error("Error fetching real-time metrics:", error);
-        setRealTimeMetrics({
-          totalLeads: 0,
-          convertedLeads: 0,
-          conversionRate: 0,
-        });
-      }
-    };
-
-    fetchRealTimeMetrics();
-  }, [selectedUserId]);
   if (!analyticsData) {
     return (
       <div className="col-span-12 flex justify-center items-center py-12">
@@ -156,7 +104,7 @@ function RoleBasedAnalytics({
   return (
     <>
       {/* Analytics Summary Card - Only for SuperAdmin, Admin, CRM Manager */}
-      {canViewAllData && realTimeMetrics && (
+      {canViewAllData && (
         <div className="col-span-12 mb-6">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
@@ -167,13 +115,21 @@ function RoleBasedAnalytics({
                 </span>
               )}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  Total Sales
+                </h4>
+                <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">
+                  ${analyticsData.totalSales.toLocaleString()}
+                </p>
+              </div>
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                 <h4 className="text-sm font-medium text-green-600 dark:text-green-400">
                   Total Leads
                 </h4>
                 <p className="text-2xl font-bold text-green-800 dark:text-green-200">
-                  {realTimeMetrics.totalLeads.toLocaleString()}
+                  {analyticsData.totalLeads.toLocaleString()}
                 </p>
               </div>
               <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
@@ -181,7 +137,7 @@ function RoleBasedAnalytics({
                   Conversion Rate
                 </h4>
                 <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">
-                  {realTimeMetrics.conversionRate}%
+                  {analyticsData.conversionRate}%
                 </p>
               </div>
             </div>
@@ -225,18 +181,6 @@ function RoleBasedAnalytics({
       <div className="col-span-12 xl:col-span-12">
         <LeadBifurcation selectedUserId={selectedUserId} />
       </div>
-
-      <div className="col-span-12">
-        <PrimaryCategoryBifurcation selectedUserId={selectedUserId} />
-      </div>
-
-      <div className="col-span-12">
-        <SecondaryCategoryBifurcation selectedUserId={selectedUserId} />
-      </div>
-
-      <div className="col-span-12">
-        <MonthlyConversionRatios selectedUserId={selectedUserId} />
-      </div>
     </>
   );
 }
@@ -272,11 +216,11 @@ export default function Home() {
             setSelectedUserId(userData.id); // Default to own data for sales/support
           }
         } else {
-          navigate("/");
+          navigate("/auth/signin");
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        navigate("/");
+        navigate("/auth/signin");
       } finally {
         setLoading(false);
       }

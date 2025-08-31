@@ -25,7 +25,7 @@ export default function GenerateReport() {
   const [leadowner, setLeadowner] = useState("");
   const [status, setStatus] = useState("");
   const [territory, setTerritory] = useState("");
-  const [region, setRegion] = useState("");
+  // ...existing code...
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
@@ -36,7 +36,7 @@ export default function GenerateReport() {
   const [leadFor, setLeadFor] = useState("");
   const [domesticOrExport, setDomesticOrExport] = useState("");
   const [isFca, setIsFca] = useState("");
-  const [warrantyStatus, setWarrantyStatus] = useState("");
+  // ...existing code...
   const [isDeleted, setIsDeleted] = useState("");
   const [untouched, setUntouched] = useState("");
   const [hasFollowups, setHasFollowups] = useState("");
@@ -54,7 +54,7 @@ export default function GenerateReport() {
   const [availableTerritories, setAvailableTerritories] = useState<string[]>(
     []
   );
-  const [availableRegions, setAvailableRegions] = useState<string[]>([]);
+  // ...existing code...
   const [availablePrimaryCategories, setAvailablePrimaryCategories] = useState<
     string[]
   >([]);
@@ -109,7 +109,6 @@ export default function GenerateReport() {
           setAvailableCompanies(data.companies || []);
           setAvailableSources(data.sources || []);
           setAvailableTerritories(data.territories || []);
-          setAvailableRegions(data.regions || []);
           setAvailablePrimaryCategories(data.primaryCategories || []);
           setAvailableSecondaryCategories(data.secondaryCategories || []);
         }
@@ -151,7 +150,6 @@ export default function GenerateReport() {
           leadowner,
           status,
           territory,
-          region,
           state,
           country,
           city,
@@ -162,7 +160,6 @@ export default function GenerateReport() {
           leadFor,
           domesticOrExport,
           isFca,
-          warrantyStatus,
           isDeleted,
           untouched,
           hasFollowups,

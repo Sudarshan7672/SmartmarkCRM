@@ -5,14 +5,9 @@ const Lead = require("../models/lead"); // Adjust path if needed
 const FollowUp = require("../models/FollowUp");
 const { isAuthenticated } = require("../passportconfig");
 
-// Helper function to add isdeleted: false to all queries
-function addDeletedFilter(query = {}) {
-  return { ...query, isdeleted: false };
-}
-
 // Helper function to get leadowner match condition based on user role
 const getLeadOwnerMatchCondition = async (req, userId) => {
-  let matchCondition = { isdeleted: false }; // Always filter out deleted leads
+  let matchCondition = {};
 
   if (req.user && (req.user.role === "Sales" || req.user.role === "Support")) {
     // For Sales/Support, always filter by their fullname
@@ -46,29 +41,46 @@ router.get("/lead-metrics", isAuthenticated, async (req, res) => {
 
     console.log("Applied filter:", filter);
 
-    const total = await Lead.countDocuments(filter);
-    const newLeads = await Lead.countDocuments({ ...filter, status: "New" });
+    const total = await Lead.countDocuments({ ...filter, isdeleted: false });
+    const newLeads = await Lead.countDocuments({
+      ...filter,
+      status: "New",
+      isdeleted: false,
+    });
     const notConnected = await Lead.countDocuments({
       ...filter,
       status: "Not-Connected",
+      isdeleted: false,
     });
-    const hot = await Lead.countDocuments({ ...filter, status: "Hot" });
-    const cold = await Lead.countDocuments({ ...filter, status: "Cold" });
+    const hot = await Lead.countDocuments({
+      ...filter,
+      status: "Hot",
+      isdeleted: false,
+    });
+    const cold = await Lead.countDocuments({
+      ...filter,
+      status: "Cold",
+      isdeleted: false,
+    });
     const reEnquired = await Lead.countDocuments({
       ...filter,
       status: "Re-enquired",
+      isdeleted: false,
     });
     const converted = await Lead.countDocuments({
       ...filter,
       status: "Converted",
+      isdeleted: false,
     });
     const followUp = await Lead.countDocuments({
       ...filter,
       status: "Follow-up",
+      isdeleted: false,
     });
     const transferred = await Lead.countDocuments({
       ...filter,
       status: "Transferred-to-Dealer",
+      isdeleted: false,
     });
     const unassigned = await Lead.countDocuments({
       ...filter,
@@ -815,10 +827,8 @@ router.get("/test-auth", isAuthenticated, async (req, res) => {
 // GET /api/v1/dashboard/dropdown-data
 router.get("/dropdown-data", isAuthenticated, async (req, res) => {
   try {
-    const { userId } = req.query;
-
     // Get the lead owner match condition based on user role
-    const leadOwnerCondition = await getLeadOwnerMatchCondition(req, userId);
+    const leadOwnerCondition = await getLeadOwnerMatchCondition(req);
 
     // Fetch distinct values for dropdowns from leads that the user can access
     const dropdownData = await Lead.aggregate([
@@ -882,282 +892,6 @@ router.get("/dropdown-data", isAuthenticated, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch dropdown data",
-    });
-  }
-});
-
-// GET /api/v1/dashboard/primary-category-bifurcation
-router.get(
-  "/primary-category-bifurcation",
-  isAuthenticated,
-  async (req, res) => {
-    try {
-      const { userId } = req.query;
-      const filter = await getLeadOwnerMatchCondition(req, userId);
-
-      const bifurcation = await Lead.aggregate([
-        { $match: filter },
-        {
-          $project: {
-            primarycategory: {
-              $cond: [
-                { $eq: ["$primarycategory", ""] },
-                "Unassigned",
-                "$primarycategory",
-              ],
-            },
-            status: 1,
-            created_at: 1,
-            updated_at: 1,
-          },
-        },
-        {
-          $group: {
-            _id: "$primarycategory",
-            total: { $sum: 1 },
-            new: {
-              $sum: { $cond: [{ $eq: ["$status", "New"] }, 1, 0] },
-            },
-            notConnected: {
-              $sum: { $cond: [{ $eq: ["$status", "Not-Connected"] }, 1, 0] },
-            },
-            hot: {
-              $sum: { $cond: [{ $eq: ["$status", "Hot"] }, 1, 0] },
-            },
-            cold: {
-              $sum: { $cond: [{ $eq: ["$status", "Cold"] }, 1, 0] },
-            },
-            followUp: {
-              $sum: { $cond: [{ $eq: ["$status", "Follow-up"] }, 1, 0] },
-            },
-            converted: {
-              $sum: { $cond: [{ $eq: ["$status", "Converted"] }, 1, 0] },
-            },
-            transferred: {
-              $sum: {
-                $cond: [{ $eq: ["$status", "Transferred-to-Dealers"] }, 1, 0],
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            category: "$_id",
-            total: 1,
-            new: 1,
-            notConnected: 1,
-            hot: 1,
-            cold: 1,
-            followUp: 1,
-            converted: 1,
-            transferred: 1,
-            conversionRate: {
-              $cond: [
-                { $eq: ["$total", 0] },
-                0,
-                { $multiply: [{ $divide: ["$converted", "$total"] }, 100] },
-              ],
-            },
-            _id: 0,
-          },
-        },
-        { $sort: { total: -1 } },
-      ]);
-
-      res.status(200).json({
-        success: true,
-        data: bifurcation,
-      });
-    } catch (error) {
-      console.error("Error fetching primary category bifurcation:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to fetch primary category bifurcation",
-      });
-    }
-  }
-);
-
-// GET /api/v1/dashboard/secondary-category-bifurcation
-router.get(
-  "/secondary-category-bifurcation",
-  isAuthenticated,
-  async (req, res) => {
-    try {
-      const { userId } = req.query;
-      const filter = await getLeadOwnerMatchCondition(req, userId);
-
-      const bifurcation = await Lead.aggregate([
-        { $match: filter },
-        {
-          $project: {
-            secondarycategory: {
-              $cond: [
-                { $eq: ["$secondarycategory", ""] },
-                "Unassigned",
-                "$secondarycategory",
-              ],
-            },
-            status: 1,
-            created_at: 1,
-            updated_at: 1,
-          },
-        },
-        {
-          $group: {
-            _id: "$secondarycategory",
-            total: { $sum: 1 },
-            new: {
-              $sum: { $cond: [{ $eq: ["$status", "New"] }, 1, 0] },
-            },
-            notConnected: {
-              $sum: { $cond: [{ $eq: ["$status", "Not-Connected"] }, 1, 0] },
-            },
-            hot: {
-              $sum: { $cond: [{ $eq: ["$status", "Hot"] }, 1, 0] },
-            },
-            cold: {
-              $sum: { $cond: [{ $eq: ["$status", "Cold"] }, 1, 0] },
-            },
-            followUp: {
-              $sum: { $cond: [{ $eq: ["$status", "Follow-up"] }, 1, 0] },
-            },
-            converted: {
-              $sum: { $cond: [{ $eq: ["$status", "Converted"] }, 1, 0] },
-            },
-            transferred: {
-              $sum: {
-                $cond: [{ $eq: ["$status", "Transferred-to-Dealers"] }, 1, 0],
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            category: "$_id",
-            total: 1,
-            new: 1,
-            notConnected: 1,
-            hot: 1,
-            cold: 1,
-            followUp: 1,
-            converted: 1,
-            transferred: 1,
-            conversionRate: {
-              $cond: [
-                { $eq: ["$total", 0] },
-                0,
-                { $multiply: [{ $divide: ["$converted", "$total"] }, 100] },
-              ],
-            },
-            _id: 0,
-          },
-        },
-        { $sort: { total: -1 } },
-      ]);
-
-      res.status(200).json({
-        success: true,
-        data: bifurcation,
-      });
-    } catch (error) {
-      console.error("Error fetching secondary category bifurcation:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to fetch secondary category bifurcation",
-      });
-    }
-  }
-);
-
-// GET /api/v1/dashboard/monthly-conversion-ratios
-router.get("/monthly-conversion-ratios", isAuthenticated, async (req, res) => {
-  try {
-    const { userId } = req.query;
-    const filter = await getLeadOwnerMatchCondition(req, userId);
-
-    const currentYear = new Date().getFullYear();
-
-    const monthlyData = await Lead.aggregate([
-      {
-        $match: {
-          ...filter,
-          created_at: {
-            $gte: new Date(`${currentYear}-01-01`),
-            $lte: new Date(`${currentYear}-12-31`),
-          },
-        },
-      },
-      {
-        $group: {
-          _id: { $month: "$created_at" },
-          totalLeads: { $sum: 1 },
-          convertedLeads: {
-            $sum: { $cond: [{ $eq: ["$status", "Converted"] }, 1, 0] },
-          },
-        },
-      },
-      {
-        $project: {
-          month: "$_id",
-          totalLeads: 1,
-          convertedLeads: 1,
-          conversionRate: {
-            $cond: [
-              { $eq: ["$totalLeads", 0] },
-              0,
-              {
-                $multiply: [
-                  { $divide: ["$convertedLeads", "$totalLeads"] },
-                  100,
-                ],
-              },
-            ],
-          },
-          _id: 0,
-        },
-      },
-      { $sort: { month: 1 } },
-    ]);
-
-    // Fill in missing months with zero data
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    const completeData = monthNames.map((name, index) => {
-      const monthData = monthlyData.find((data) => data.month === index + 1);
-      return {
-        month: name,
-        monthNumber: index + 1,
-        totalLeads: monthData ? monthData.totalLeads : 0,
-        convertedLeads: monthData ? monthData.convertedLeads : 0,
-        conversionRate: monthData
-          ? Math.round(monthData.conversionRate * 100) / 100
-          : 0,
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      data: completeData,
-    });
-  } catch (error) {
-    console.error("Error fetching monthly conversion ratios:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch monthly conversion ratios",
     });
   }
 });

@@ -12,7 +12,6 @@ const generateInactivityNotifications = async () => {
       primarycategory: "",
       secondarycategory: "",
       updated_at: { $lte: fourDaysAgo },
-      isdeleted: false,
     });
 
     // Condition 2: Not updated for 2+ days but has a primary category
@@ -21,7 +20,6 @@ const generateInactivityNotifications = async () => {
       status: "New",
       primarycategory: { $ne: "" },
       updated_at: { $lte: twoDaysAgo },
-      isdeleted: false,
     });
 
     const allLeads = [...leadsEvery4Days, ...leadsEvery2Days];
