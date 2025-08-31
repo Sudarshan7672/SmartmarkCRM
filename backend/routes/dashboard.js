@@ -377,7 +377,7 @@ router.get("/lead-bifurcation", isAuthenticated, async (req, res) => {
           primarycategory: {
             $cond: [
               { $eq: ["$primarycategory", ""] },
-              "Unassigned",
+              "Unassigned primary categories",
               "$primarycategory",
             ],
           },
