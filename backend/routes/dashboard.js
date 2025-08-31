@@ -301,6 +301,77 @@ router.get("/monthly-target", isAuthenticated, async (req, res) => {
   }
 });
 
+// GET /api/v1/dashboard/monthly-conversion-ratios
+router.get("/monthly-conversion-ratios", isAuthenticated, async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const filter = await getLeadOwnerMatchCondition(req, userId);
+
+    // Get data for the last 12 months
+    const monthlyData = await Lead.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$created_at" },
+            month: { $month: "$created_at" },
+          },
+          totalLeads: { $sum: 1 },
+          convertedLeads: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "converted"] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          conversionRate: {
+            $cond: [
+              { $eq: ["$totalLeads", 0] },
+              0,
+              {
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ["$convertedLeads", "$totalLeads"] },
+                      100,
+                    ],
+                  },
+                  2,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $sort: { "_id.year": -1, "_id.month": -1 },
+      },
+      { $limit: 12 },
+    ]);
+
+    // Format the data for the frontend
+    const formatted = monthlyData
+      .map((item) => ({
+        month: `${item._id.year}-${String(item._id.month).padStart(2, "0")}`,
+        monthName: new Date(item._id.year, item._id.month - 1).toLocaleString(
+          "default",
+          { month: "long", year: "numeric" }
+        ),
+        totalLeads: item.totalLeads,
+        convertedLeads: item.convertedLeads,
+        conversionRate: item.conversionRate,
+      }))
+      .reverse(); // Reverse to show oldest to newest
+
+    res.status(200).json({ data: formatted });
+  } catch (error) {
+    console.error("Error fetching monthly conversion ratios:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 // GET /api/v1/leads/recent
 router.get("/recent-ten", isAuthenticated, async (req, res) => {
   try {

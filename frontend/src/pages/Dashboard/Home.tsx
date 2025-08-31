@@ -8,7 +8,9 @@ import DemographicCard from "../../components/ecommerce/DemographicCard";
 import PageMeta from "../../components/common/PageMeta";
 import CategorySummaryTable from "../../components/ecommerce/CategorySummaryTable";
 import ChannelSourceConversionTable from "../../components/ecommerce/ChannelSourceConversionTable";
-import LeadBifurcation from "../../components/ecommerce/LeadBifurcation";
+import MonthlyConversionRatios from "../../components/ecommerce/MonthlyConversionRatios";
+// import LeadBifurcation from "../../components/ecommerce/LeadBifurcation";
+
 import GenerateReport from "../../components/ecommerce/GenerateReport";
 import { useNavigate } from "react-router-dom";
 import {
@@ -164,6 +166,10 @@ function RoleBasedAnalytics({
       </div>
 
       <div className="col-span-12">
+        <MonthlyConversionRatios selectedUserId={selectedUserId} />
+      </div>
+
+      <div className="col-span-12">
         <StatisticsChart selectedUserId={selectedUserId} />
       </div>
 
@@ -178,9 +184,9 @@ function RoleBasedAnalytics({
         </div>
       )}
 
-      <div className="col-span-12 xl:col-span-12">
+      {/* <div className="col-span-12 xl:col-span-12">
         <LeadBifurcation selectedUserId={selectedUserId} />
-      </div>
+      </div> */}
     </>
   );
 }
@@ -216,11 +222,11 @@ export default function Home() {
             setSelectedUserId(userData.id); // Default to own data for sales/support
           }
         } else {
-          navigate("/auth/signin");
+          navigate("/");
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        navigate("/auth/signin");
+        navigate("/");
       } finally {
         setLoading(false);
       }
