@@ -380,14 +380,14 @@ router.get("/get-leads", async (req, res) => {
       query.primarycategory = parsedFilters.primarycategory.trim();
     }
     // empty primary category
-    if (parsedFilters.primarycategory?.trim() === "") {
+    if (parsedFilters.primarycategory?.trim() === "unassigned") {
       query.primarycategory = { $exists: false };
     }
     if (parsedFilters.secondarycategory?.trim()) {
       query.secondarycategory = parsedFilters.secondarycategory.trim();
     }
     // empty secondary category
-    if (parsedFilters.secondarycategory?.trim() === "") {
+    if (parsedFilters.secondarycategory?.trim() === "unassigned") {
       query.secondarycategory = { $exists: false };
     }
     if (parsedFilters.leadowner?.trim()) {
