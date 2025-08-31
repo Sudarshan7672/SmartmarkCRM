@@ -288,6 +288,7 @@ const LeadFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
                 <MenuItem value="sales team">Sales Team</MenuItem>
                 <MenuItem value="walk-in">Walk-in</MenuItem>
                 <MenuItem value="referral">Referral</MenuItem>
+                <MenuItem value="repeat orders">Repeat Orders</MenuItem>
                 <MenuItem value="other">Other</MenuItem>
               </TextField>
             </div>

@@ -10,12 +10,18 @@ router.post("/add", async (req, res) => {
     const { lead_id, title, followUpDate, status, notes, updatedby } = req.body;
 
     if (!lead_id || !title || !followUpDate) {
-      return res.status(400).json({ message: "Required fields are missing: lead_id, title, followUpDate." });
+      return res
+        .status(400)
+        .json({
+          message: "Required fields are missing: lead_id, title, followUpDate.",
+        });
     }
 
-    const lead = await Lead.findOne({ lead_id });
+    const lead = await Lead.findOne({ lead_id, isdeleted: false });
     if (!lead) {
-      return res.status(404).json({ message: "Lead not found with the provided lead_id." });
+      return res
+        .status(404)
+        .json({ message: "Lead not found with the provided lead_id." });
     }
 
     // Create and save the new follow-up
@@ -34,8 +40,8 @@ router.post("/add", async (req, res) => {
     lead.updatelogs = lead.updatelogs || []; // make sure array exists
 
     lead.updatelogs.push({
-      updatedby: req.user?.fullname || "Unknown User",  // Ideally pass username from frontend or auth token
-      updatedfields: ["followUps"],            // field(s) updated
+      updatedby: req.user?.fullname || "Unknown User", // Ideally pass username from frontend or auth token
+      updatedfields: ["followUps"], // field(s) updated
       changes: [
         {
           field: "followUps",
@@ -53,13 +59,17 @@ router.post("/add", async (req, res) => {
 
     await lead.save();
 
-    res.status(201).json({ message: "Follow-up added successfully!", followUp: newFollowUp });
+    res
+      .status(201)
+      .json({
+        message: "Follow-up added successfully!",
+        followUp: newFollowUp,
+      });
   } catch (error) {
     console.error("Error adding follow-up:", error);
     res.status(500).json({ message: "Server error. Could not add follow-up." });
   }
 });
-
 
 // ✅ Fetch All Follow-Ups
 router.get("/", async (req, res) => {
@@ -69,7 +79,10 @@ router.get("/", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
 
-    const followUps = await FollowUp.find({ addedBy: fullname }).populate("leadId", "lead_id name email");
+    const followUps = await FollowUp.find({ addedBy: fullname }).populate(
+      "leadId",
+      "lead_id name email"
+    );
 
     res.status(200).json(followUps);
   } catch (error) {
@@ -78,11 +91,13 @@ router.get("/", async (req, res) => {
   }
 });
 
-
 // ✅ Fetch Follow-Ups by Lead ID
 router.get("/lead/:lead_id", async (req, res) => {
   try {
-    const lead = await Lead.findOne({ lead_id: req.params.lead_id });
+    const lead = await Lead.findOne({
+      lead_id: req.params.lead_id,
+      isdeleted: false,
+    });
     if (!lead) {
       return res.status(404).json({ message: "Lead not found." });
     }
@@ -91,7 +106,9 @@ router.get("/lead/:lead_id", async (req, res) => {
     res.status(200).json(followUps);
   } catch (error) {
     console.error("Error fetching follow-ups by lead ID:", error);
-    res.status(500).json({ message: "Failed to retrieve follow-ups for the lead." });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve follow-ups for the lead." });
   }
 });
 
@@ -101,7 +118,11 @@ router.put("/:id", async (req, res) => {
     const { title, followUpDate, status, notes } = req.body;
 
     if (!title || !followUpDate || !status) {
-      return res.status(400).json({ message: "Required fields are missing: title, followUpDate, status." });
+      return res
+        .status(400)
+        .json({
+          message: "Required fields are missing: title, followUpDate, status.",
+        });
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {

@@ -3,7 +3,10 @@ const Lead = require("../models/lead");
 
 const createRemarkNotification = async ({ lead_id, remarkby }) => {
   try {
-    const lead = await Lead.findOne({ lead_id: `${lead_id}` });
+    const lead = await Lead.findOne({
+      lead_id: `${lead_id}`,
+      isdeleted: false,
+    });
     if (!lead) {
       console.error("Lead not found for notification.");
       return;

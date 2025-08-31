@@ -4,7 +4,7 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 // import CountryMap from "./CountryMap";
-import BACKEND_URL  from "../../configs/constants";
+import BACKEND_URL from "../../configs/constants";
 
 type CountryDataItem = {
   country: string;
@@ -12,7 +12,11 @@ type CountryDataItem = {
   percentage: number;
 };
 
-export default function DemographicCard() {
+interface Props {
+  selectedUserId?: string;
+}
+
+export default function DemographicCard({ selectedUserId }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [countryData, setCountryData] = useState<CountryDataItem[]>([]);
 
@@ -25,12 +29,18 @@ export default function DemographicCard() {
   }
 
   useEffect(() => {
-    axios.get(`${BACKEND_URL}/dashboard/leads-by-country`,{
-      withCredentials: true,
-    })
-      .then(res => setCountryData(res.data.data))
-      .catch(err => console.error("Failed to fetch country data", err));
-  }, []);
+    const params = new URLSearchParams();
+    if (selectedUserId && selectedUserId !== "") {
+      params.append("userId", selectedUserId);
+    }
+
+    axios
+      .get(`${BACKEND_URL}/dashboard/leads-by-country?${params.toString()}`, {
+        withCredentials: true,
+      })
+      .then((res) => setCountryData(res.data.data))
+      .catch((err) => console.error("Failed to fetch country data", err));
+  }, [selectedUserId]);
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
@@ -47,7 +57,11 @@ export default function DemographicCard() {
           <button className="dropdown-toggle" onClick={toggleDropdown}>
             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
           </button>
-          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
+          <Dropdown
+            isOpen={isOpen}
+            onClose={closeDropdown}
+            className="w-40 p-2"
+          >
             <DropdownItem onItemClick={closeDropdown}>View More</DropdownItem>
             <DropdownItem onItemClick={closeDropdown}>Delete</DropdownItem>
           </Dropdown>

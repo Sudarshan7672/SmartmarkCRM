@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && sudo rm -rf /var/www/html/* && sudo cp -r dist/* /var/www/html",
+    "build": "tsc -b && vite build",
+    "buildweb": "tsc -b && vite build && sudo rm -rf /var/www/html/* && sudo cp -r dist/* /var/www/html",
     "lint": "eslint .",
     "preview": "vite preview"
   },

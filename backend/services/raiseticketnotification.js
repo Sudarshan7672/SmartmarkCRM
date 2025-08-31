@@ -5,8 +5,11 @@ const raiseTicketNotification = async ({ name, issue }) => {
   try {
     // Attempt to find the lead using the name
     const lead = await Lead.findOne({
-      $or: [
-        { fullname: new RegExp(name.split(" ")[0], "i") },
+      $and: [
+        { isdeleted: false },
+        {
+          $or: [{ fullname: new RegExp(name.split(" ")[0], "i") }],
+        },
       ],
     });
 

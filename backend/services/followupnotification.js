@@ -24,7 +24,10 @@ const generateFollowUpNotifications = async () => {
     console.log("Follow-ups fetched:", followups.length);
 
     for (const followup of followups) {
-      const lead = await Lead.findById(followup.leadId);
+      const lead = await Lead.findOne({
+        _id: followup.leadId,
+        isdeleted: false,
+      });
       if (!lead) continue;
 
       const followUpDate = new Date(followup.followUpDate);

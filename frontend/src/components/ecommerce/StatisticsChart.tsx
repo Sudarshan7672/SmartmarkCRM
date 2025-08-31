@@ -5,7 +5,11 @@ import { ApexOptions } from "apexcharts";
 // import ChartTab from "../common/ChartTab";
 import BACKEND_URL from "../../configs/constants";
 
-export default function StatisticsChart() {
+interface Props {
+  selectedUserId?: string;
+}
+
+export default function StatisticsChart({ selectedUserId }: Props) {
   const [leadStats, setLeadStats] = useState<
     { target: number; completed: number }[]
   >([]);
@@ -13,8 +17,13 @@ export default function StatisticsChart() {
   useEffect(() => {
     const fetchLeadStats = async () => {
       try {
+        const params = new URLSearchParams();
+        if (selectedUserId && selectedUserId !== "") {
+          params.append("userId", selectedUserId);
+        }
+
         const response = await axios.get(
-          `${BACKEND_URL}/dashboard/lead-stats`,
+          `${BACKEND_URL}/dashboard/lead-stats?${params.toString()}`,
           {
             withCredentials: true,
           }
@@ -26,7 +35,7 @@ export default function StatisticsChart() {
     };
 
     fetchLeadStats();
-  }, []);
+  }, [selectedUserId]);
 
   const options: ApexOptions = {
     legend: {

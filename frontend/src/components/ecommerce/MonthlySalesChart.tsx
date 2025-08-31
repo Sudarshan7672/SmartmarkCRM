@@ -3,34 +3,50 @@ import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import BACKEND_URL from "../../configs/constants";
 
-export default function MonthlySalesChart() {
+interface Props {
+  selectedUserId?: string;
+}
+
+export default function MonthlySalesChart({ selectedUserId }: Props) {
   const [chartData, setChartData] = useState<number[]>([]);
   const [chartLabels, setChartLabels] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const fetchTimelineData = async () => {
+  const fetchTimelineData = useCallback(async () => {
     try {
-      const res = await axios.get(`${BACKEND_URL}/dashboard/lead-timeline`,{
-        withCredentials: true,
-      });
-      const dates = res.data.data.map((d: any) => d.date);
+      const params = new URLSearchParams();
+      if (selectedUserId && selectedUserId !== "") {
+        params.append("userId", selectedUserId);
+      }
+
+      const res = await axios.get(
+        `${BACKEND_URL}/dashboard/lead-timeline?${params.toString()}`,
+        {
+          withCredentials: true,
+        }
+      );
+      const dates = res.data.data.map(
+        (d: { date: string; count: number }) => d.date
+      );
       // console.log("Dates:", res.data.data);
-      const counts = res.data.data.map((d: any) => d.count);
+      const counts = res.data.data.map(
+        (d: { date: string; count: number }) => d.count
+      );
       // console.log("Counts:", counts);
       setChartLabels(dates);
       setChartData(counts);
     } catch (err) {
       console.error("Error fetching chart data:", err);
     }
-  };
+  }, [selectedUserId]);
 
   useEffect(() => {
     fetchTimelineData();
-  }, []);
+  }, [fetchTimelineData]);
 
   const options: ApexOptions = {
     colors: ["#465fff"],
@@ -100,12 +116,23 @@ export default function MonthlySalesChart() {
           Lead Time Line Report
         </h3>
         <div className="relative inline-block">
-          <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
+          <button
+            className="dropdown-toggle"
+            onClick={() => setIsOpen(!isOpen)}
+          >
             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
           </button>
-          <Dropdown isOpen={isOpen} onClose={() => setIsOpen(false)} className="w-40 p-2">
-            <DropdownItem onItemClick={() => setIsOpen(false)}>View More</DropdownItem>
-            <DropdownItem onItemClick={() => setIsOpen(false)}>Delete</DropdownItem>
+          <Dropdown
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            className="w-40 p-2"
+          >
+            <DropdownItem onItemClick={() => setIsOpen(false)}>
+              View More
+            </DropdownItem>
+            <DropdownItem onItemClick={() => setIsOpen(false)}>
+              Delete
+            </DropdownItem>
           </Dropdown>
         </div>
       </div>

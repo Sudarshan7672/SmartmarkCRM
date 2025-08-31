@@ -7,46 +7,73 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
   const [formData, setFormData] = useState(existingData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [assignedCategories, setAssignedCategories] = useState({
+    primary: [],
+    secondary: [],
+  });
+
+  // Sync formData with existingData when existingData changes
+  React.useEffect(() => {
+    setFormData(existingData);
+    // Reset assigned categories to ensure clean state for new lead
+    setAssignedCategories({
+      primary: [],
+      secondary: [],
+    });
+    // Fetch assigned categories when existingData changes and leadowner is available
+    if (existingData?.leadowner) {
+      fetchAssignedCategoriesOnLoad(existingData.leadowner);
+    }
+  }, [existingData]);
+
+  // Reset state when modal is closed
+  React.useEffect(() => {
+    if (!isOpen) {
+      setAssignedCategories({
+        primary: [],
+        secondary: [],
+      });
+    }
+  }, [isOpen]);
 
   const states = [
-  "Andaman and Nicobar Islands",
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chandigarh",
-  "Chhattisgarh",
-  "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jammu and Kashmir",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Ladakh",
-  "Lakshadweep",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Puducherry",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal"
-];
-
+    "Andaman and Nicobar Islands",
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chandigarh",
+    "Chhattisgarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jammu and Kashmir",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Ladakh",
+    "Lakshadweep",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Puducherry",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+  ];
 
   if (!isOpen) return null;
 
@@ -56,6 +83,65 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
+
+    // If leadowner changes, fetch assigned categories
+    if (name === "leadowner" && value) {
+      fetchAssignedCategories(value);
+    }
+  };
+
+  // Function to fetch assigned categories for selected leadowner (with reset)
+  const fetchAssignedCategories = async (username) => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/users/${username}`, {
+        withCredentials: true,
+      });
+
+      if (response.data) {
+        setAssignedCategories({
+          primary: response.data.assignedPrimaryCategories || [],
+          secondary: response.data.assignedSecondaryCategories || [],
+        });
+
+        // Reset category selections when leadowner changes
+        setFormData((prev) => ({
+          ...prev,
+          primarycategory: "",
+          secondarycategory: "",
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching assigned categories:", error);
+      // Reset to empty arrays on error
+      setAssignedCategories({
+        primary: [],
+        secondary: [],
+      });
+    }
+  };
+
+  // Function to fetch assigned categories on modal load (without reset)
+  const fetchAssignedCategoriesOnLoad = async (username) => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/users/${username}`, {
+        withCredentials: true,
+      });
+
+      if (response.data) {
+        setAssignedCategories({
+          primary: response.data.assignedPrimaryCategories || [],
+          secondary: response.data.assignedSecondaryCategories || [],
+        });
+        // Don't reset category selections on load - keep existing values
+      }
+    } catch (error) {
+      console.error("Error fetching assigned categories:", error);
+      // Reset to empty arrays on error
+      setAssignedCategories({
+        primary: [],
+        secondary: [],
+      });
+    }
   };
 
   // Validation functions
@@ -124,10 +210,10 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
     e.preventDefault();
 
     // Validate phone numbers
-    if (!validatePhoneNumber(formData.contact)) {
-      setMessage("Invalid contact number (10 digits required)");
-      return;
-    }
+    // if (!validatePhoneNumber(formData.contact)) {
+    //   setMessage("Invalid contact number (10 digits required)");
+    //   return;
+    // }
 
     if (formData.whatsapp && !validatePhoneNumber(formData.whatsapp)) {
       setMessage("Invalid WhatsApp number (10 digits required)");
@@ -204,6 +290,23 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
     }
   };
 
+  // Helper function to get region options based on selected territory
+  const getRegionOptions = () => {
+    if (formData?.territory === "T1 - South and West") {
+      return [
+        { value: "south", label: "South" },
+        { value: "west", label: "West" },
+      ];
+    } else if (formData?.territory === "T2 - North, East and Central") {
+      return [
+        { value: "north", label: "North" },
+        { value: "east", label: "East" },
+        { value: "central", label: "Central" },
+      ];
+    }
+    return [];
+  };
+
   return (
     <div className="fixed inset-0 flex pt-20 pl-40 items-center justify-center bg-opacity-30 backdrop-blur-sm">
       <div className="max-w-5xl w-full bg-white dark:bg-gray-900 dark:text-white shadow-lg rounded-lg p-6 border border-blue-400 relative">
@@ -229,7 +332,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               name="source"
               className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
               onChange={handleChange}
-              value={formData.source}
+              value={formData?.source}
               required
             >
               <option disabled value="">
@@ -243,6 +346,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               <option value="sales team">Sales Team</option>
               <option value="walk-in">Walk-in</option>
               <option value="referral">Referral</option>
+              <option value="repeat orders">Repeat Orders</option>
               <option value="other">Other</option>
             </select>
           </label>
@@ -298,15 +402,16 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
               onChange={handleChange}
               value={formData.region}
+              disabled={!formData?.territory}
             >
               <option disabled value="">
                 Select Region
               </option>
-              <option value="east">East</option>
-              <option value="west">West</option>
-              <option value="north">North</option>
-              <option value="south">South</option>
-              <option value="central">Central</option>
+              {getRegionOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -351,9 +456,7 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             { label: "WhatsApp", name: "whatsapp", type: "number" },
             { label: "Designation", name: "designation", type: "text" },
             { label: "Company", name: "company", type: "textarea" },
-            { label: "Country", name: "country", type: "textarea" },
             { label: "Address", name: "address", type: "textarea" },
-            // { label: "territory", name: "territory", type: "text" },
             { label: "Requirements", name: "requirements", type: "textarea" },
             { label: "Referred By", name: "referredby", type: "textarea" },
             { label: "Referred To", name: "referredto", type: "text" },
@@ -380,6 +483,22 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
             </label>
           ))}
 
+          {/* Country Field with uppercase */}
+          <label className="flex flex-col font-medium">
+            Country
+            <input
+              type="text"
+              name="country"
+              className="border rounded px-3 py-2 w-full"
+              onChange={(e) => {
+                e.target.value = e.target.value.toUpperCase();
+                handleChange(e);
+              }}
+              value={formData.country || ""}
+              style={{ textTransform: "uppercase" }}
+            />
+          </label>
+
           {/* Primary & Secondary Category */}
           <label className="flex flex-col font-medium">
             Primary Category
@@ -388,14 +507,18 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
               onChange={handleChange}
               value={formData.primarycategory}
+              disabled={
+                !formData?.leadowner || assignedCategories.primary.length === 0
+              }
             >
               <option disabled value="">
                 Select Primary Category
               </option>
-              <option value="sales">Sales</option>
-              <option value="support">Support</option>
-              <option value="marketing">Marketing</option>
-              <option value="other">other</option>
+              {assignedCategories.primary.map((category) => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex flex-col font-medium">
@@ -405,21 +528,19 @@ const LeadUpdate = ({ isOpen, onClose, existingData }) => {
               className="border rounded px-3 py-2 w-full dark:bg-gray-900 dark:text-white"
               onChange={handleChange}
               value={formData.secondarycategory}
+              disabled={
+                !formData?.leadowner ||
+                assignedCategories.secondary.length === 0
+              }
             >
               <option disabled value="">
                 Select Secondary Category
               </option>
-              {[...Array(6)].map((_, index) => (
-                <>
-                  <option
-                    key={`group-${index + 1}`}
-                    value={`group ${index + 1}`}
-                  >
-                    Group {index + 1}
-                  </option>
-                </>
+              {assignedCategories.secondary.map((category) => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
               ))}
-              <option value="other">Other</option>
             </select>
           </label>
 

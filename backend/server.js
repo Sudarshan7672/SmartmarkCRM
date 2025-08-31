@@ -83,7 +83,6 @@ app.use(morgan("dev")); // Log requests to the console
 // Enable CORS
 // const cors = require("cors");
 const corsOptions = {
-  // origin: ["http://localhost:5173", "http://localhost:5174"],
   origin: [
     "https://www.smartmark.gurubrandingservices.com",
     "https://smartmark.gurubrandingservices.com",

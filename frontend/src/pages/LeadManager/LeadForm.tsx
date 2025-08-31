@@ -69,6 +69,13 @@ const LeadForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [assignedCategories, setAssignedCategories] = useState<{
+    primary: string[];
+    secondary: string[];
+  }>({
+    primary: [],
+    secondary: [],
+  });
 
   const states = [
     "Andaman and Nicobar Islands",
@@ -120,6 +127,41 @@ const LeadForm = () => {
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     });
+
+    // If leadowner changes, fetch assigned categories
+    if (name === "leadowner" && value) {
+      fetchAssignedCategories(value);
+    }
+  };
+
+  // Function to fetch assigned categories for selected leadowner
+  const fetchAssignedCategories = async (username: string) => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/users/${username}`, {
+        withCredentials: true,
+      });
+
+      if (response.data) {
+        setAssignedCategories({
+          primary: response.data.assignedPrimaryCategories || [],
+          secondary: response.data.assignedSecondaryCategories || [],
+        });
+
+        // Reset category selections when leadowner changes
+        setFormData((prev) => ({
+          ...prev,
+          primarycategory: "",
+          secondarycategory: "",
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching assigned categories:", error);
+      // Reset to empty arrays on error
+      setAssignedCategories({
+        primary: [],
+        secondary: [],
+      });
+    }
   };
 
   // Validation functions
@@ -188,10 +230,10 @@ const LeadForm = () => {
     e.preventDefault();
 
     // Validate phone numbers
-    if (!validatePhoneNumber(formData.contact)) {
-      setMessage("Invalid contact number (10 digits required)");
-      return;
-    }
+    // if (!validatePhoneNumber(formData.contact)) {
+    //   setMessage("Invalid contact number (10 digits required)");
+    //   return;
+    // }
 
     if (formData.whatsapp && !validatePhoneNumber(formData.whatsapp)) {
       setMessage("Invalid WhatsApp number (10 digits required)");
@@ -311,6 +353,23 @@ const LeadForm = () => {
     }
   };
 
+  // Helper function to get region options based on selected territory
+  const getRegionOptions = () => {
+    if (formData.territory === "T1 - South and West") {
+      return [
+        { value: "south", label: "South" },
+        { value: "west", label: "West" },
+      ];
+    } else if (formData.territory === "T2 - North, East and Central") {
+      return [
+        { value: "north", label: "North" },
+        { value: "east", label: "East" },
+        { value: "central", label: "Central" },
+      ];
+    }
+    return [];
+  };
+
   return (
     <>
       <PageMeta
@@ -326,7 +385,7 @@ const LeadForm = () => {
         <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-2">
           <select
             name="source"
-            className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
+            className="border border-red-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
             onChange={handleChange}
             value={formData.source}
           >
@@ -342,6 +401,7 @@ const LeadForm = () => {
             <option value="sales team">Sales Team</option>
             <option value="walk-in">Walk-in</option>
             <option value="referral">Referral</option>
+            <option value="repeat orders">Repeat Orders</option>
             <option value="other">Other</option>
           </select>
 
@@ -451,6 +511,7 @@ const LeadForm = () => {
             className="border border-gray-300 rounded px-3 py-2"
             onChange={handleChange}
             value={formData.territory}
+            required
           >
             <option value="" disabled>
               Select Territory
@@ -466,15 +527,16 @@ const LeadForm = () => {
             className="border border-gray-300 rounded px-3 py-2"
             onChange={handleChange}
             value={formData.region}
+            disabled={!formData.territory}
           >
             <option value="" disabled>
               Select Region
             </option>
-            <option value="east">East</option>
-            <option value="west">West</option>
-            <option value="north">North</option>
-            <option value="south">South</option>
-            <option value="central">Central</option>
+            {getRegionOptions().map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <input
@@ -482,8 +544,12 @@ const LeadForm = () => {
             name="country"
             placeholder="Country"
             className="border border-gray-300 rounded px-3 py-2"
-            onChange={handleChange}
+            onChange={(e) => {
+              e.target.value = e.target.value.toUpperCase();
+              handleChange(e);
+            }}
             value={formData.country}
+            style={{ textTransform: "uppercase" }}
           />
 
           <textarea
@@ -521,14 +587,18 @@ const LeadForm = () => {
             className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
             onChange={handleChange}
             value={formData.primarycategory}
+            disabled={
+              !formData.leadowner || assignedCategories.primary.length === 0
+            }
           >
             <option disabled value="">
               Select Primary Category
             </option>
-            <option value="sales">Sales</option>
-            <option value="support">Support</option>
-            <option value="marketing">Marketing</option>
-            <option value="other">other</option>
+            {assignedCategories.primary.map((category) => (
+              <option key={category} value={category}>
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </option>
+            ))}
           </select>
 
           <select
@@ -536,18 +606,18 @@ const LeadForm = () => {
             className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
             onChange={handleChange}
             value={formData.secondarycategory}
+            disabled={
+              !formData.leadowner || assignedCategories.secondary.length === 0
+            }
           >
             <option disabled value="">
               Select Secondary Category
             </option>
-            {[...Array(6)].map((_, index) => (
-              <>
-                <option key={`group-${index + 1}`} value={`group ${index + 1}`}>
-                  Group {index + 1}
-                </option>
-              </>
+            {assignedCategories.secondary.map((category) => (
+              <option key={category} value={category}>
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </option>
             ))}
-            {<option value="other">Other</option>}
           </select>
           <select
             name="leadfor"
@@ -617,16 +687,22 @@ const LeadForm = () => {
 
           {/* Removed transferredto field as it doesn't exist in the schema */}
 
-          {/* Checkbox for Is FCA */}
-          <label className="flex items-center space-x-2 col-span-">
-            <input
-              type="checkbox"
-              name="isfca"
-              onChange={handleChange}
-              checked={formData.isfca}
-            />
-            <span>Is FCA</span>
-          </label>
+          {/* Dropdown for Is FCA */}
+          <select
+            name="isfca"
+            className="border border-gray-300 rounded px-3 py-2 dark:bg-gray-800 dark:text-white"
+            onChange={(e) => {
+              const booleanValue = e.target.value === "true";
+              setFormData({
+                ...formData,
+                isfca: booleanValue,
+              });
+            }}
+            value={formData.isfca ? "true" : "false"}
+          >
+            <option value="true">FCA (Yes)</option>
+            <option value="false">FCA (No)</option>
+          </select>
 
           {/* Submit Button */}
           {user.can_add_individual_lead && isLoggedIn && (

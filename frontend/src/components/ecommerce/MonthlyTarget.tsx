@@ -7,15 +7,24 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 import BACKEND_URL from "../../configs/constants";
 
-export default function MonthlyTarget() {
+interface Props {
+  selectedUserId?: string;
+}
+
+export default function MonthlyTarget({ selectedUserId }: Props) {
   const [series, setSeries] = useState([0]);
   const [converted, setConverted] = useState(0);
   const [target, setTarget] = useState(100);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedUserId && selectedUserId !== "") {
+      params.append("userId", selectedUserId);
+    }
+
     axios
-      .get(`${BACKEND_URL}/dashboard/monthly-target`, {
+      .get(`${BACKEND_URL}/dashboard/monthly-target?${params.toString()}`, {
         withCredentials: true,
       })
       .then((res) => {
@@ -27,7 +36,7 @@ export default function MonthlyTarget() {
       .catch((err) => {
         console.error("Error fetching monthly target:", err);
       });
-  }, []);
+  }, [selectedUserId]);
 
   const options: ApexOptions = {
     chart: {

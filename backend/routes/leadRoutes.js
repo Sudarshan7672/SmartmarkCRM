@@ -10,6 +10,11 @@ const { isAuthenticated } = require("../passportconfig");
 const LeadDeleteLog = require("../models/leaddeletelog"); // Adjust path based on your project structure
 const { logLeadTransfer } = require("../services/transferLogsService");
 
+// Helper function to add isdeleted: false to all queries
+function addDeletedFilter(query = {}) {
+  return { ...query, isdeleted: false };
+}
+
 router.post("/add", async (req, res) => {
   try {
     let {
@@ -63,13 +68,15 @@ router.post("/add", async (req, res) => {
     }
 
     // Check if a lead with the same email, contact, or company exists
-    const existingLead = await Lead.findOne({
-      $or: [
-        email ? { email } : null,
-        contactString ? { contact: contactString } : null,
-        whatsappString ? { whatsapp: whatsappString } : null,
-      ].filter(Boolean),
-    });
+    const existingLead = await Lead.findOne(
+      addDeletedFilter({
+        $or: [
+          email ? { email } : null,
+          contactString ? { contact: contactString } : null,
+          whatsappString ? { whatsapp: whatsappString } : null,
+        ].filter(Boolean),
+      })
+    );
 
     let re_enquired = !!existingLead;
 
@@ -81,7 +88,7 @@ router.post("/add", async (req, res) => {
     const randomDigits = Math.floor(100 + Math.random() * 900);
     const lead_id = `SM${year}${month}${day}${randomDigits}`;
 
-    const existingLeadId = await Lead.findOne({ lead_id });
+    const existingLeadId = await Lead.findOne(addDeletedFilter({ lead_id }));
     if (existingLeadId) {
       return res.status(500).json({ error: "Lead ID conflict, please retry" });
     }
@@ -149,6 +156,8 @@ router.post("/add", async (req, res) => {
   }
 });
 
+// if the leadowner is updated then we need to update previousleadowner
+
 router.put("/update", isAuthenticated, async (req, res) => {
   console.log("Updating lead with ID:", req.body._id);
   try {
@@ -163,8 +172,18 @@ router.put("/update", isAuthenticated, async (req, res) => {
 
     // Fetch existing lead
     const existingLead = await Lead.findById(_id);
-    if (!existingLead) {
+    if (!existingLead || existingLead.isdeleted) {
       return res.status(404).json({ message: "Lead not found" });
+    }
+    const existingLeadOwner = existingLead.leadowner;
+    const updatedLeadOwner = updated_data.leadowner;
+    if (
+      updatedLeadOwner &&
+      existingLeadOwner &&
+      updatedLeadOwner !== existingLeadOwner
+    ) {
+      // Lead owner has changed
+      updated_data.previousleadowner = existingLeadOwner;
     }
 
     // Track changes manually before update for logging
@@ -244,6 +263,9 @@ router.put("/update", isAuthenticated, async (req, res) => {
         changes,
         logtime: new Date(),
       });
+
+      // Set untouched to false when lead is updated
+      existingLead.untouched = false;
     }
 
     // Save the updated lead (with changes and logs)
@@ -274,8 +296,10 @@ router.put("/update", isAuthenticated, async (req, res) => {
   }
 });
 
+// now in /get-leads we have to add one compulsory filter that role filter isdeleted:false
 router.get("/get-leads", async (req, res) => {
   try {
+    console.log(req.user);
     const { status, filters, page = 1, limit = 20 } = req.query;
 
     // Parse filters safely
@@ -294,6 +318,7 @@ router.get("/get-leads", async (req, res) => {
     if (user?.role === "Support") {
       roleFilter.primarycategory = { $in: ["support", "marketing", "other"] };
       if (user?.fullname === "Aakansha Rathod") {
+        console.log("Applying special filter for Aakansha Rathod");
         roleFilter.secondarycategory = {
           $in: ["group 1", "group 5", "group 6"],
         };
@@ -351,6 +376,8 @@ router.get("/get-leads", async (req, res) => {
         statusFilter.status = status;
       }
     }
+    // now in /get-leads we have to add one compulsory filter that role filter isdeleted:false
+    // roleFilter.isdeleted = false;
 
     // Build main query
     const query = { ...roleFilter, ...statusFilter };
@@ -370,9 +397,17 @@ router.get("/get-leads", async (req, res) => {
     }
 
     if (parsedFilters.untouchedLeads === true) {
-      query.$expr = {
-        $lte: [{ $abs: { $subtract: ["$created_at", "$updated_at"] } }, 10000],
-      };
+      query.$or = [
+        {
+          $expr: {
+            $lte: [
+              { $abs: { $subtract: ["$created_at", "$updated_at"] } },
+              10000,
+            ],
+          },
+        },
+        { untouched: true },
+      ];
     }
 
     if (parsedFilters.unassignedLeads === true) {
@@ -453,7 +488,10 @@ router.get("/get-leads", async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     // Fetch all filtered leads from DB (no pagination)
-    let allLeads = await Lead.find(query).sort({ created_at: -1 }).exec();
+    // // now in /get-leads we have to add one compulsory filter that role filter isdeleted:false
+    let allLeads = await Lead.find({ ...query, isdeleted: false })
+      .sort({ created_at: -1 })
+      .exec();
 
     // Parse recentCount slicing params
     const from = Number(parsedFilters.recentCountFrom) || 0;
@@ -470,31 +508,30 @@ router.get("/get-leads", async (req, res) => {
     // Compute status counts on slicedLeads if slicing applied, else on allLeads
     const leadsForStatusCount = slicedLeads;
 
-const statusCounts = {
-  New: 0,
-  "Not-Connected": 0,
-  Hot: 0,
-  Cold: 0,
-  Closed: 0,
-  "Re-enquired": 0,
-  "Follow-up": 0,
-  Converted: 0,
-  "Transferred-to-Dealer": 0,
-};
+    const statusCounts = {
+      New: 0,
+      "Not-Connected": 0,
+      Hot: 0,
+      Cold: 0,
+      Closed: 0,
+      "Re-enquired": 0,
+      "Follow-up": 0,
+      Converted: 0,
+      "Transferred-to-Dealer": 0,
+    };
 
-// Count actual status and re-enquired separately
-for (const lead of leadsForStatusCount) {
-  if (lead.status && statusCounts.hasOwnProperty(lead.status)) {
-    statusCounts[lead.status]++;
-  }
-  if (lead.re_enquired && statusCounts.hasOwnProperty("Re-enquired")) {
-    statusCounts["Re-enquired"]++;
-  }
-}
+    // Count actual status and re-enquired separately
+    for (const lead of leadsForStatusCount) {
+      if (lead.status && statusCounts.hasOwnProperty(lead.status)) {
+        statusCounts[lead.status]++;
+      }
+      if (lead.re_enquired && statusCounts.hasOwnProperty("Re-enquired")) {
+        statusCounts["Re-enquired"]++;
+      }
+    }
 
-// Add total count of all leads
-statusCounts.All = leadsForStatusCount.length;
-
+    // Add total count of all leads
+    statusCounts.All = leadsForStatusCount.length;
 
     // Paginate sliced leads
     const paginatedLeads = slicedLeads.slice(skip, skip + limitNum);
@@ -580,7 +617,13 @@ router.delete("/delete/:leadId", async (req, res) => {
     console.log("Deleting lead with ID:", leadId);
 
     // Find and delete the lead, which will trigger the middleware
-    const deletedLead = await Lead.findOneAndDelete({ lead_id: leadId });
+    // we have to soft delete the lead using isdeleted
+    const deletedLead = await Lead.findOneAndUpdate(
+      { lead_id: leadId },
+      { isdeleted: true },
+      { new: true }
+    );
+    console.log("Deleted Lead:", deletedLead);
 
     if (!deletedLead) {
       return res.status(404).json({ message: "Lead not found" });
@@ -615,6 +658,41 @@ router.delete("/delete/:leadId", async (req, res) => {
   }
 });
 
+// undelete the lead
+router.post("/undelete/:leadId", async (req, res) => {
+  const { leadId } = req.params;
+  console.log("Undeleting lead with ID:", leadId);
+  try {
+    console.log("Updating lead...");
+    console.log(await Lead.findById(leadId));
+    const updatedLead = await Lead.findOneAndUpdate(
+      { _id: leadId },
+      { isdeleted: false },
+      { new: true }
+    );
+    // console.log("Undeleted Lead:", updatedLead);
+    if (!updatedLead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+    res.status(200).json(updatedLead);
+  } catch (error) {
+    console.error("Error undeleting lead:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// GET all deleted leads
+router.get("/deleted", async (req, res) => {
+  try {
+    console.log("Fetching all deleted leads");
+    const deletedLeads = await Lead.find({ isdeleted: true });
+    res.json(deletedLeads);
+  } catch (error) {
+    console.error("Error fetching deleted leads:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // GET all lead delete logs
 router.get("/get-delete-logs", async (req, res) => {
   try {
@@ -629,4 +707,4 @@ router.get("/get-delete-logs", async (req, res) => {
 
 module.exports = router;
 
-module.exports = router;
+// module.exports = router;

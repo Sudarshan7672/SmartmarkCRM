@@ -14,7 +14,7 @@ const Lead = require("../models/lead");
  */
 const logLeadTransfer = async (leadId, transferDetails) => {
   try {
-    const lead = await Lead.findOne({ lead_id: leadId });
+    const lead = await Lead.findOne({ lead_id: leadId, isdeleted: false });
 
     if (!lead) {
       throw new Error("Lead not found");

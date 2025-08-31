@@ -11,6 +11,10 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  previousleadowner: {
+    type: String,
+    required: false,
+  },
   source: {
     type: String,
     required: true,
@@ -145,6 +149,16 @@ const leadSchema = new mongoose.Schema({
     required: false,
     default: "",
     enum: ["", "domestic", "export"],
+  },
+  isdeleted: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  untouched: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
   followups: [
     {

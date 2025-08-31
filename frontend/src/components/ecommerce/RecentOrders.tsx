@@ -12,14 +12,23 @@ import { Lead } from "../ui/table"; // Assuming Lead type is exported from here
 
 import BACKEND_URL from "../../configs/constants";
 
-export default function RecentOrders() {
+interface Props {
+  selectedUserId?: string;
+}
+
+export default function RecentOrders({ selectedUserId }: Props) {
   const [leads, setLeads] = useState<Lead[]>([]);
 
   useEffect(() => {
     const fetchRecentLeads = async () => {
       try {
+        const params = new URLSearchParams();
+        if (selectedUserId && selectedUserId !== "") {
+          params.append("userId", selectedUserId);
+        }
+
         const response = await axios.get(
-          `${BACKEND_URL}/dashboard/recent-ten`,
+          `${BACKEND_URL}/dashboard/recent-ten?${params.toString()}`,
           {
             withCredentials: true,
           }
@@ -31,7 +40,7 @@ export default function RecentOrders() {
     };
 
     fetchRecentLeads();
-  }, []);
+  }, [selectedUserId]);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-white/[0.03] px-4 pb-3 pt-4 sm:px-6">
