@@ -379,8 +379,16 @@ router.get("/get-leads", async (req, res) => {
     if (parsedFilters.primarycategory?.trim()) {
       query.primarycategory = parsedFilters.primarycategory.trim();
     }
+    // empty primary category
+    if (parsedFilters.primarycategory?.trim() === "") {
+      query.primarycategory = { $exists: false };
+    }
     if (parsedFilters.secondarycategory?.trim()) {
       query.secondarycategory = parsedFilters.secondarycategory.trim();
+    }
+    // empty secondary category
+    if (parsedFilters.secondarycategory?.trim() === "") {
+      query.secondarycategory = { $exists: false };
     }
     if (parsedFilters.leadowner?.trim()) {
       query.leadowner = parsedFilters.leadowner.trim();
